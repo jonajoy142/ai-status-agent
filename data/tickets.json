@@ -1,0 +1,16 @@
+[
+  {
+    "id": "PAY-231",
+    "title": "Implement Stripe payment gateway",
+    "status": "In Progress",
+    "assignee": "Rahul",
+    "description": "Stripe API integration for checkout"
+  },
+  {
+    "id": "PAY-245",
+    "title": "Refund processing support",
+    "status": "Todo",
+    "assignee": "Maya",
+    "description": "Implement refund API"
+  }
+]
