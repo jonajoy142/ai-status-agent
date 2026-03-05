@@ -7,17 +7,13 @@ def retrieve(query: str, source: str | None = None):
 
     db = get_vector_store()
 
-    # -----------------------------
     # Embedding with cache
-    # -----------------------------
     embedding = get_cached_embedding(
         query,
         db._embedding_function.embed_query
     )
 
-    # -----------------------------
     # Vector Search
-    # -----------------------------
     if source:
         results = db.similarity_search_by_vector(
             embedding,
@@ -32,9 +28,7 @@ def retrieve(query: str, source: str | None = None):
 
     docs = [doc.page_content for doc in results]
 
-    # -----------------------------
     # Rerank documents
-    # -----------------------------
     reranked_docs = rerank(query, docs)
 
     return reranked_docs

@@ -16,9 +16,7 @@ from app.infrastructure.agents.tools.doc_search_tool import search_docs
 logger = logging.getLogger(__name__)
 
 
-# --------------------------------
 # Agent State
-# --------------------------------
 class AgentState(TypedDict):
     question: str
     rewritten_query: str
@@ -28,18 +26,13 @@ class AgentState(TypedDict):
     step: int
 
 
-# --------------------------------
 # LLM
-# --------------------------------
 llm = ChatOllama(
     model=settings.llm_model,
     temperature=0
 )
 
-
-# --------------------------------
 # Query Rewrite
-# --------------------------------
 def rewrite_query(state: AgentState):
 
     question = state["question"]
@@ -88,9 +81,7 @@ def rewrite_query(state: AgentState):
     }
 
 
-# --------------------------------
 # Reasoning Step
-# --------------------------------
 def agent_reason(state: AgentState):
 
     logger.info("Agent reasoning step")
@@ -136,9 +127,7 @@ Output must contain only the token.
     return {"decision": decision}
 
 
-# --------------------------------
 # Tool Execution
-# --------------------------------
 def execute_tool(state: AgentState):
 
     query = state["rewritten_query"]
@@ -171,9 +160,7 @@ def execute_tool(state: AgentState):
     }
 
 
-# --------------------------------
 # Generate Final Answer
-# --------------------------------
 def generate_answer(state: AgentState):
 
     logger.info("Generating final answer")
@@ -230,9 +217,7 @@ def generate_answer(state: AgentState):
     return {"answer": answer}
 
 
-# --------------------------------
 # Router
-# --------------------------------
 def router(state: AgentState):
 
     step = state.get("step", 0)
@@ -248,9 +233,7 @@ def router(state: AgentState):
     return "tool"
 
 
-# --------------------------------
 # Agent Class
-# --------------------------------
 class StatusAgent:
 
     def __init__(self):

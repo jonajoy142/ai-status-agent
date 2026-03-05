@@ -1,7 +1,5 @@
 import json
 
-
-
 class FileTicketRepository(TicketRepository):
 
     def __init__(self, path="data/tickets.json"):
