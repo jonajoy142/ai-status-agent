@@ -1,6 +1,6 @@
 import logging
 from typing import TypedDict, Optional
-
+from app.infrastructure.agents.memory import get_memory, add_memory
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, END
 
@@ -154,30 +154,36 @@ def execute_tool(state: AgentState):
 
 # ---------------------------
 # Generate Final Answer
-# ---------------------------
 def generate_answer(state: AgentState):
 
     logger.info("Generating final answer")
 
+    memory = get_memory()
+
     prompt = f"""
-You are an AI project assistant.
+You are an AI engineering assistant.
 
-Use the observation to answer the question.
+Conversation History:
+{memory}
 
-Observation:
+Context from retrieval:
 {state.get('observation','')}
 
 Question:
 {state['question']}
 
-Provide a concise engineering project status summary.
+Answer clearly and concisely.
 """
 
     response = llm.invoke(prompt)
 
+    answer = response.content
+
+    add_memory(state["question"], answer)
+
     logger.info("Final answer generated")
 
-    return {"answer": response.content}
+    return {"answer": answer}
 
 
 # ---------------------------
