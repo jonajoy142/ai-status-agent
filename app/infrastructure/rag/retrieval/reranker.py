@@ -1,6 +1,6 @@
 from langchain_ollama import ChatOllama
 
-reranker_llm = ChatOllama(model="llama3.2")
+reranker_llm = ChatOllama(model="llama3")
 
 
 def rerank(query: str, docs: list[str]):
@@ -8,20 +8,25 @@ def rerank(query: str, docs: list[str]):
     if not docs:
         return docs
 
+    docs_text = "\n".join([f"{i}: {doc}" for i, doc in enumerate(docs)])
+
     prompt = f"""
-You are ranking documents by relevance.
+Select the 3 most relevant documents for the query.
 
 Query:
 {query}
 
 Documents:
-{docs}
+{docs_text}
 
-Return the 3 most relevant documents.
+Return ONLY the document numbers separated by commas.
+Example: 0,2,3
 """
 
-    response = reranker_llm.invoke(prompt)
+    response = reranker_llm.invoke(prompt).content.strip()
 
-    text = response.content
-
-    return text
+    try:
+        indexes = [int(i) for i in response.split(",")]
+        return [docs[i] for i in indexes if i < len(docs)]
+    except:
+        return docs[:3]

@@ -1,21 +1,24 @@
 import logging
-from typing import TypedDict, Optional
-from app.infrastructure.agents.memory import get_memory, add_memory
+from typing import TypedDict
+
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, END
+
+from app.config.settings import settings
+from app.infrastructure.agents.memory import get_memory, add_memory
+from app.infrastructure.agents.tracing import add_trace
 
 from app.infrastructure.agents.tools.ticket_search_tool import search_tickets
 from app.infrastructure.agents.tools.chat_search_tool import search_slack
 from app.infrastructure.agents.tools.doc_search_tool import search_docs
-from app.config.settings import settings
 
 
 logger = logging.getLogger(__name__)
 
 
-# ---------------------------
+# --------------------------------
 # Agent State
-# ---------------------------
+# --------------------------------
 class AgentState(TypedDict):
     question: str
     rewritten_query: str
@@ -25,18 +28,18 @@ class AgentState(TypedDict):
     step: int
 
 
-# ---------------------------
+# --------------------------------
 # LLM
-# ---------------------------
+# --------------------------------
 llm = ChatOllama(
     model=settings.llm_model,
     temperature=0
 )
 
 
-# ---------------------------
+# --------------------------------
 # Query Rewrite
-# ---------------------------
+# --------------------------------
 def rewrite_query(state: AgentState):
 
     question = state["question"]
@@ -44,23 +47,30 @@ def rewrite_query(state: AgentState):
     logger.info("Rewriting query for retrieval")
 
     prompt = f"""
-    Rewrite the user question as a short search query for engineering project data.
+    Rewrite the user question into a short engineering search query
+    for retrieving project data.
+
+    Interpret business language and map it to engineering concepts.
 
     Rules:
     - Maximum 10 words
     - No explanations
     - No quotes
+    - Use engineering terminology when possible
 
     Examples:
 
     User: payment issue??
-    Query: payment feature issue status
+    Query: payment gateway failure status
 
     User: refund api done?
     Query: refund API implementation status
 
     User: stripe working?
     Query: stripe payment gateway integration status
+
+    User: checkout problem
+    Query: checkout payment service issue
 
     Question:
     {question}
@@ -70,33 +80,36 @@ def rewrite_query(state: AgentState):
 
     logger.info(f"Rewritten query: {rewritten}")
 
+    add_trace("rewrite", rewritten)
+
     return {
         "rewritten_query": rewritten,
         "step": 0
     }
 
 
-# ---------------------------
+# --------------------------------
 # Reasoning Step
-# ---------------------------
+# --------------------------------
 def agent_reason(state: AgentState):
 
     logger.info("Agent reasoning step")
 
     prompt = f"""
-You are an AI engineering assistant.
+You are an AI engineering assistant deciding which tool to use.
 
 Available tools:
-search_tickets
-search_slack
-search_docs
+- search_tickets
+- search_slack
+- search_docs
 
 You can also return:
-final_answer
+- final_answer
 
 Rules:
-- Do not repeat the same tool many times.
-- After gathering enough information return final_answer.
+- Choose ONE tool.
+- Do not repeat tools unnecessarily.
+- If enough information exists in the observation, return final_answer.
 
 Question:
 {state['question']}
@@ -104,24 +117,28 @@ Question:
 Observation:
 {state.get('observation','')}
 
-Return ONLY one of:
+Return EXACTLY one token:
 
 search_tickets
 search_slack
 search_docs
 final_answer
+
+Output must contain only the token.
 """
 
     decision = llm.invoke(prompt).content.lower().strip()
 
     logger.info(f"Agent decision: {decision}")
 
+    add_trace("reason", decision)
+
     return {"decision": decision}
 
 
-# ---------------------------
+# --------------------------------
 # Tool Execution
-# ---------------------------
+# --------------------------------
 def execute_tool(state: AgentState):
 
     query = state["rewritten_query"]
@@ -146,14 +163,17 @@ def execute_tool(state: AgentState):
 
     logger.info("Tool observation collected")
 
+    add_trace("tool", observation)
+
     return {
         "observation": observation,
         "step": step
     }
 
 
-# ---------------------------
+# --------------------------------
 # Generate Final Answer
+# --------------------------------
 def generate_answer(state: AgentState):
 
     logger.info("Generating final answer")
@@ -161,19 +181,41 @@ def generate_answer(state: AgentState):
     memory = get_memory()
 
     prompt = f"""
-You are an AI engineering assistant.
+    You are an AI project assistant for an engineering team.
+    Conversation History:
+    {memory}
 
-Conversation History:
-{memory}
+    Business users may describe problems in non-technical terms.
+    Map business language to engineering features or tickets.
 
-Context from retrieval:
-{state.get('observation','')}
+    Examples:
+    - "payment issue" → payment gateway, checkout, refund, transaction
+    - "login problem" → authentication, login API, session handling
+    - "refund issue" → refund API, payment reversal
 
-Question:
-{state['question']}
+    Your job is to interpret the question and summarize relevant
+    engineering tickets or features from the context.
 
-Answer clearly and concisely.
-"""
+    Context:
+    {state.get('observation', '')}
+
+    User Question:
+    {state['question']}
+
+    Return the answer in this format:
+
+    Feature:
+    Status:
+    Owner:
+    Latest Update:
+
+    Rules:
+    - Use relevant engineering features even if the question uses business language.
+    - If multiple features are related, include them.
+    - Do NOT say "no issue found" unless the context truly has nothing related.
+    - If a field is missing, write "unknown".
+    """
+
 
     response = llm.invoke(prompt)
 
@@ -181,14 +223,16 @@ Answer clearly and concisely.
 
     add_memory(state["question"], answer)
 
+    add_trace("answer", answer)
+
     logger.info("Final answer generated")
 
     return {"answer": answer}
 
 
-# ---------------------------
+# --------------------------------
 # Router
-# ---------------------------
+# --------------------------------
 def router(state: AgentState):
 
     step = state.get("step", 0)
@@ -204,9 +248,9 @@ def router(state: AgentState):
     return "tool"
 
 
-# ---------------------------
+# --------------------------------
 # Agent Class
-# ---------------------------
+# --------------------------------
 class StatusAgent:
 
     def __init__(self):
