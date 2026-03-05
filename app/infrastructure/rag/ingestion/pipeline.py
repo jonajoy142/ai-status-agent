@@ -4,23 +4,21 @@ from app.infrastructure.rag.vector_store.chroma_store import get_vector_store
 
 
 def run_ingestion():
+
     print("Loading documents...")
     docs = load_documents()
 
-    print(f"Loaded {len(docs)} documents")
-
     print("Chunking documents...")
     chunks = chunk_documents(docs)
-
-    print(f"Created {len(chunks)} chunks")
 
     print("Saving embeddings...")
 
     db = get_vector_store()
 
-    db.add_texts(chunks)
+    texts = [c["text"] for c in chunks]
+    metadata = [c["metadata"] for c in chunks]
 
-    # db.persist()
+    db.add_texts(texts=texts, metadatas=metadata)
 
     print("RAG ingestion complete.")
 

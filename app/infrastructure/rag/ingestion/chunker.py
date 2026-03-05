@@ -1,5 +1,6 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+
 def chunk_documents(docs):
 
     splitter = RecursiveCharacterTextSplitter(
@@ -9,7 +10,17 @@ def chunk_documents(docs):
 
     chunks = []
 
-    for d in docs:
-        chunks.extend(splitter.split_text(d))
+    for doc in docs:
+
+        text = doc["text"]
+        metadata = doc["metadata"]
+
+        split_texts = splitter.split_text(text)
+
+        for chunk in split_texts:
+            chunks.append({
+                "text": chunk,
+                "metadata": metadata
+            })
 
     return chunks

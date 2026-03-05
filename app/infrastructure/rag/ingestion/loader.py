@@ -1,25 +1,35 @@
 from pathlib import Path
 import json
 
-
 DATA_DIR = Path("data")
 
 
 def load_documents():
     docs = []
 
-    # Load tickets
+    # tickets
     with open(DATA_DIR / "tickets.json") as f:
         tickets = json.load(f)
+
         for t in tickets:
-            docs.append(str(t))
+            docs.append({
+                "text": str(t),
+                "metadata": {"source": "tickets"}
+            })
 
-    # Load slack
+    # slack
     with open(DATA_DIR / "slack.txt") as f:
-        docs.extend(f.readlines())
+        for line in f.readlines():
+            docs.append({
+                "text": line,
+                "metadata": {"source": "slack"}
+            })
 
-    # Load docs
+    # docs
     with open(DATA_DIR / "docs.md") as f:
-        docs.append(f.read())
+        docs.append({
+            "text": f.read(),
+            "metadata": {"source": "docs"}
+        })
 
     return docs
