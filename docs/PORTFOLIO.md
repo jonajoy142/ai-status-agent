@@ -1,8 +1,8 @@
-# StatusPilot AI Positioning
+# SprintPilot.AI Positioning
 
 ## One-line Positioning
 
-StatusPilot AI is a SaaS-style multi-agent project intelligence tool that sits on top of Jira-like workflows and turns tickets, chat updates, and documentation into source-backed status reports.
+SprintPilot.AI is a SaaS-style multi-agent project intelligence tool that sits on top of Jira-like workflows and turns tickets, chat updates, and documentation into source-backed status reports.
 
 ## What It Demonstrates
 
@@ -20,7 +20,7 @@ StatusPilot AI is a SaaS-style multi-agent project intelligence tool that sits o
 
 ## Interview Demo Flow
 
-1. Open Dashboard and frame StatusPilot AI as a Jira-adjacent project intelligence layer.
+1. Open Dashboard and frame SprintPilot.AI as a Jira-adjacent project intelligence layer.
 2. Go to Agent Run and ask: `What is the current checkout launch status and risk?`
 3. Show the report, quality score, citations, tool calls, and trace timeline.
 4. Open Knowledge Base to explain retrieval metadata and ingestion status.
@@ -29,7 +29,7 @@ StatusPilot AI is a SaaS-style multi-agent project intelligence tool that sits o
 
 ## Resume Bullet Options
 
-- Built StatusPilot AI, a deployable multi-agent project intelligence SaaS prototype using FastAPI, Next.js, Pydantic, RAG, and MCP-ready tool abstractions.
+- Built SprintPilot.AI, a deployable multi-agent project intelligence SaaS prototype using FastAPI, Next.js, Pydantic, RAG, and MCP-ready tool abstractions.
 - Designed a supervisor-agent workflow with specialized status, risk, and documentation agents, tool tracing, structured outputs, and source citations.
 - Implemented a production-oriented AI backend with typed APIs, retrieval abstraction, tool registry, trace visibility, tests, and deployment configs for Vercel and Railway/Render.
 

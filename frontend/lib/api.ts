@@ -124,7 +124,7 @@ export async function runAgent(question: string): Promise<AgentRunResponse> {
   const response = await fetch(`${API_BASE_URL}/agent/run`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question, session_id: "statuspilot-demo" }),
+    body: JSON.stringify({ question, session_id: "sprintpilot-demo" }),
   });
 
   if (!response.ok) {

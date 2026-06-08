@@ -4,7 +4,7 @@ import "./globals.css";
 import { AppShell } from "@/components/app-shell";
 
 export const metadata: Metadata = {
-  title: "StatusPilot AI",
+  title: "SprintPilot.AI",
   description: "Multi-agent project intelligence for engineering teams.",
 };
 

@@ -1,8 +1,8 @@
-# StatusPilot AI
+# SprintPilot.AI
 
 Multi-agent project intelligence for engineering teams.
 
-StatusPilot AI is a SaaS-style product prototype that sits on top of Jira-like tickets, engineering chat, and project documentation to generate source-backed status reports, risk summaries, and action items.
+SprintPilot.AI is a SaaS-style product prototype that sits on top of Jira-like tickets, engineering chat, and project documentation to generate source-backed status reports, risk summaries, and action items.
 
 ## What It Demonstrates
 

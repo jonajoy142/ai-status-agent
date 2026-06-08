@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 
-const reportText = "Checkout launch is progressing with medium risk. Stripe gateway work is in progress, observability is live, and the remaining launch concern is retry-safe payment handling plus auth session stability.";
+const reportText = "Checkout launch is progressing with medium risk. Stripe gateway work is in progress, launch metrics are live, and the remaining launch concern is retry-safe payment handling plus auth session stability.";
 
 export default function ReportsPage() {
   return (
@@ -15,9 +15,9 @@ export default function ReportsPage() {
       <Card className="grid gap-6 p-7 lg:grid-cols-[1fr_auto] lg:items-center">
         <div>
           <Badge>Reports</Badge>
-          <h1 className="mt-5 font-display text-4xl font-semibold tracking-[-0.05em]">Project reports your team can actually use.</h1>
+          <h1 className="mt-5 font-display text-4xl font-semibold tracking-[-0.05em]">Operating reports your team can actually use.</h1>
           <p className="mt-4 max-w-3xl text-base leading-8 text-muted">
-            Generate sprint summaries, risk summaries, and action items from source-backed agent runs. Designed to replace manual Jira status rollups, not to look like a toy chatbot.
+            Generate sprint summaries, risk summaries, and action items from source-backed project activity. Designed to reduce manual Jira status rollups.
           </p>
         </div>
         <Link href="/agent-run">
@@ -75,7 +75,7 @@ export default function ReportsPage() {
         </Card>
 
         <Card>
-          <CardTitle>Generated reports</CardTitle>
+          <CardTitle>Operating briefs</CardTitle>
           <div className="mt-5 space-y-3">
             {[
               ["Checkout launch readiness", "Medium risk", "Today"],

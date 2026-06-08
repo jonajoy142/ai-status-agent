@@ -18,12 +18,12 @@ export default function KnowledgeBasePage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <Badge>Knowledge Base</Badge>
-            <h1 className="mt-5 font-display text-4xl font-semibold tracking-[-0.05em]">Project context indexed for agent retrieval.</h1>
+            <h1 className="mt-5 font-display text-4xl font-semibold tracking-[-0.05em]">Project context ready for weekly briefs.</h1>
             <p className="mt-4 max-w-3xl text-base leading-8 text-muted">
-              StatusPilot starts with a local demo corpus and is structured to plug into Jira, Slack, GitHub, Linear, Confluence, or Notion through MCP-ready tools.
+              SprintPilot starts with tickets, team updates, and project docs. Later, the same workspace can connect to Jira, Slack, GitHub, Linear, Confluence, or Notion.
             </p>
           </div>
-          <StatusBadge label="Vector store ready" tone="good" />
+          <StatusBadge label="Context ready" tone="good" />
         </div>
       </Card>
 
@@ -31,7 +31,7 @@ export default function KnowledgeBasePage() {
         <MetricCard label="Documents" value="12" detail="Tickets, updates, docs" trend="indexed" />
         <MetricCard label="Chunks" value="13" detail="Searchable context units" trend="ready" />
         <MetricCard label="Metadata fields" value="7" detail="source, title, id, owner, status, priority, score" />
-        <MetricCard label="Ingestion status" value="100%" detail="Demo workspace synced" trend="healthy" />
+        <MetricCard label="Sync status" value="100%" detail="Workspace synced" trend="healthy" />
       </section>
 
       <section className="grid gap-5 md:grid-cols-3">
@@ -59,11 +59,11 @@ export default function KnowledgeBasePage() {
       <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Card>
           <div className="flex items-center justify-between">
-            <CardTitle>Ingestion pipeline</CardTitle>
+            <CardTitle>Context sync flow</CardTitle>
             <PackageCheck className="h-5 w-5 text-muted" />
           </div>
           <div className="mt-5 space-y-3">
-            {["Load source documents", "Attach metadata", "Chunk content", "Index for retrieval", "Return citations"].map((step, index) => (
+            {["Load source documents", "Attach metadata", "Chunk content", "Make searchable", "Return citations"].map((step, index) => (
               <div key={step} className="flex items-center gap-3 rounded-xl border border-border bg-slate-50/70 p-3 dark:bg-slate-950/40">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-xs font-semibold text-background">{index + 1}</span>
                 <p className="text-sm font-medium">{step}</p>

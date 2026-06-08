@@ -19,9 +19,9 @@ export default function EvaluationsPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <Badge>Evaluations</Badge>
-            <h1 className="mt-5 font-display text-4xl font-semibold tracking-[-0.05em]">Quality checks for agent-generated status reports.</h1>
+            <h1 className="mt-5 font-display text-4xl font-semibold tracking-[-0.05em]">Quality checks for generated operating briefs.</h1>
             <p className="mt-4 max-w-3xl text-base leading-8 text-muted">
-              Lightweight evaluation UI for faithfulness, retrieval quality, hallucination risk, latency, token usage, and pass/fail regression checks.
+              A simple quality view for trust: groundedness, retrieval quality, hallucination risk, latency, and pass/fail checks.
             </p>
           </div>
           <StatusBadge label="Baseline passing" tone="good" />

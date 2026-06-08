@@ -27,7 +27,7 @@ export function AgentRunClient() {
       setNotice("Agent run completed.");
     } catch {
       setResult({ ...sampleAgentRun, question });
-      setNotice("Backend unavailable. Showing sample StatusPilot run data.");
+      setNotice("Backend unavailable. Showing sample SprintPilot run data.");
     } finally {
       setIsLoading(false);
     }
@@ -46,18 +46,18 @@ export function AgentRunClient() {
     <div className="grid gap-6 xl:grid-cols-[0.86fr_1.14fr]">
       <Card className="h-fit p-6">
         <div className="flex items-center justify-between gap-3">
-          <Badge>Agent workspace</Badge>
-          <StatusBadge label="MCP tools ready" tone="good" />
+          <Badge>Ask SprintPilot</Badge>
+          <StatusBadge label="Workspace ready" tone="good" />
         </div>
-        <CardTitle className="mt-5 text-3xl">Ask StatusPilot about a project</CardTitle>
+        <CardTitle className="mt-5 text-3xl">Ask SprintPilot about a project</CardTitle>
         <CardDescription>
-          Run a supervisor workflow across status, risk, and report agents. Built to sit on top of Jira-like project systems.
+          Ask about track status, blockers, attention items, or weekly changes. The answer stays concise, with evidence available when needed.
         </CardDescription>
         <div className="mt-6 space-y-4">
           <Textarea value={question} onChange={(event) => setQuestion(event.target.value)} />
           <Button onClick={onRun} disabled={isLoading || question.length < 2} className="w-full">
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SendHorizontal className="mr-2 h-4 w-4" />}
-            Run Agent
+            Generate brief
           </Button>
           <button type="button" onClick={() => setQuestion(EXAMPLE)} className="text-sm font-medium text-muted transition hover:text-foreground">
             Use sample query
@@ -82,7 +82,7 @@ export function AgentRunClient() {
                   <Clipboard className="h-4 w-4" /> Copy report
                 </button>
               </div>
-              <h2 className="mt-5 font-display text-3xl font-semibold tracking-[-0.04em]">Generated report</h2>
+              <h2 className="mt-5 font-display text-3xl font-semibold tracking-[-0.04em]">Operating brief</h2>
               <p className="mt-4 text-base leading-8 text-muted">{activeResult.report.executive_summary}</p>
               <div className="mt-6 grid gap-4 md:grid-cols-3">
                 <ScoreCard label="Quality score" value={`${qualityScore}%`} detail="Grounded answer confidence" />
@@ -92,7 +92,7 @@ export function AgentRunClient() {
             </Card>
 
             <div className="grid gap-6 lg:grid-cols-2">
-              <Panel title="Agent execution timeline" icon={<Clock className="h-5 w-5 text-muted" />}>
+              <Panel title="How this brief was produced" icon={<Clock className="h-5 w-5 text-muted" />}>
                 <div className="space-y-3">
                   {activeResult.trace.map((step, index) => (
                     <div key={`${step.agent}-${step.step}-${index}`} className="grid grid-cols-[1.5rem_1fr] gap-3 rounded-xl border border-border bg-slate-50/70 p-3 dark:bg-slate-950/40">
@@ -109,7 +109,7 @@ export function AgentRunClient() {
                 </div>
               </Panel>
 
-              <Panel title="Tool calls" icon={<Activity className="h-5 w-5 text-muted" />}>
+              <Panel title="Evidence checks" icon={<Activity className="h-5 w-5 text-muted" />}>
                 <div className="space-y-3">
                   {activeResult.tool_calls.map((tool, index) => (
                     <div key={`${tool.tool_name}-${index}`} className="rounded-xl border border-border bg-card p-4">
@@ -126,7 +126,7 @@ export function AgentRunClient() {
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-              <Panel title="Retrieved sources" icon={<FileSearch className="h-5 w-5 text-muted" />}>
+              <Panel title="Source evidence" icon={<FileSearch className="h-5 w-5 text-muted" />}>
                 <div className="space-y-3">
                   {activeResult.sources.slice(0, 5).map((source) => (
                     <div key={`${source.source}-${source.title}`} className="rounded-xl border border-border bg-card p-4">
@@ -160,7 +160,7 @@ export function AgentRunClient() {
               </div>
               <h2 className="mt-5 font-display text-3xl font-semibold tracking-[-0.04em]">Run a project intelligence query</h2>
               <p className="mt-3 text-sm leading-7 text-muted">
-                Ask about sprint status, launch risk, blockers, owners, or action items. If the API is offline, the page falls back to sample data.
+                Ask about sprint status, launch risk, blockers, owners, or action items. If the API is offline, this page uses sample workspace data.
               </p>
             </div>
           </Card>
@@ -196,7 +196,7 @@ function LoadingState() {
   return (
     <Card className="space-y-5 p-6">
       <div className="flex items-center gap-3 text-sm font-medium text-muted">
-        <Loader2 className="h-4 w-4 animate-spin" /> Running supervisor workflow
+        <Loader2 className="h-4 w-4 animate-spin" /> Generating operating brief
       </div>
       <Skeleton className="h-8 w-2/3" />
       <Skeleton className="h-24 w-full" />

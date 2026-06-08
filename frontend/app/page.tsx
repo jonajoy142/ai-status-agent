@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Bot, CheckCircle2, Database, FileText, GitBranch, Radar } from "lucide-react";
+import { ArrowRight, Bell, CalendarDays, CheckCircle2, CircleAlert, GitPullRequest, TrendingUp } from "lucide-react";
 
 import { MetricCard } from "@/components/metric-card";
 import { StatusBadge } from "@/components/status-badge";
@@ -7,139 +7,164 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 
-const traces = [
-  { agent: "supervisor", step: "planned workflow", time: "14s ago" },
-  { agent: "status", step: "searched project.search_tickets", time: "12s ago" },
-  { agent: "risk", step: "ranked blocker signals", time: "10s ago" },
-  { agent: "documentation", step: "generated report", time: "8s ago" },
+const changes = [
+  { title: "Stripe webhook verification passed in staging", owner: "Rahul", time: "Mon" },
+  { title: "Auth refresh fix moved to review", owner: "Isha", time: "Tue" },
+  { title: "Checkout metrics became available", owner: "Dev", time: "Wed" },
+  { title: "Release note citations still need cleanup", owner: "Nora", time: "Fri" },
 ];
 
-const reports = [
-  { title: "Checkout launch readiness", status: "Medium risk", owner: "Payments", time: "Today" },
-  { title: "Sprint 14 stakeholder update", status: "On track", owner: "Platform", time: "Yesterday" },
-  { title: "Release notes automation", status: "Needs citations", owner: "DevEx", time: "Jun 6" },
+const attention = [
+  "Payment retry behavior needs one more staging pass before launch sign-off.",
+  "AUTH-118 should remain visible because checkout sessions depend on it.",
+  "Release notes are useful internally but not yet ready for external stakeholders.",
 ];
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-6 reveal-up">
-      <section className="grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
-        <Card className="relative overflow-hidden p-7 sm:p-8">
-          <div className="absolute right-6 top-6 hidden h-24 w-24 rounded-full bg-blue-500/10 blur-2xl sm:block" />
-          <Badge className="border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-950 dark:bg-blue-950 dark:text-blue-300">
-            Built for Jira-connected engineering workflows
-          </Badge>
-          <h1 className="mt-5 max-w-3xl font-display text-4xl font-semibold tracking-[-0.05em] sm:text-6xl">
-            Status updates, risks, and reports from your engineering systems.
+    <div className="space-y-7 reveal-up">
+      <section className="grid gap-6 lg:grid-cols-[1.45fr_0.55fr]">
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white via-white to-sky-50/70 p-8 shadow-[0_24px_80px_rgba(15,23,42,0.07)] sm:p-10">
+          <Badge className="bg-sky-50 text-sky-700 ring-1 ring-sky-100">Weekly operating view</Badge>
+          <h1 className="mt-6 max-w-4xl font-display text-4xl font-semibold tracking-[-0.055em] sm:text-6xl">
+            Are we on track? What needs attention? What changed this week?
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-8 text-muted sm:text-lg">
-            StatusPilot AI sits on top of tickets, docs, and team updates to generate source-backed project intelligence for engineering leads.
+            SprintPilot.AI turns tickets, docs, and team updates into a concise operating brief for founders, product leads, and engineering managers.
           </p>
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href="/agent-run">
               <Button>
-                Run Agent <ArrowRight className="ml-2 h-4 w-4" />
+                Run weekly brief <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/reports" className="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold transition hover:bg-slate-100 dark:hover:bg-slate-900">
-              View reports
+            <Link href="/reports" className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 transition hover:bg-slate-50">
+              Open latest report
             </Link>
           </div>
         </Card>
 
         <Card className="p-6">
           <div className="flex items-center justify-between">
-            <CardTitle>System status</CardTitle>
-            <StatusBadge label="Online" tone="good" />
+            <CardTitle>Launch outlook</CardTitle>
+            <StatusBadge label="Mostly on track" tone="warn" />
           </div>
-          <div className="mt-6 space-y-4">
+          <p className="mt-5 font-display text-4xl font-semibold tracking-[-0.045em]">83%</p>
+          <p className="mt-2 text-sm leading-6 text-muted">Confidence based on ticket progress, recent updates, and launch criteria.</p>
+          <div className="mt-6 space-y-3">
             {[
-              ["Agent API", "Healthy", "good"],
-              ["Vector retrieval", "Local index", "good"],
-              ["MCP tools", "3 enabled", "good"],
-              ["Jira connector", "Ready later", "neutral"],
+              ["Payment work", "In progress", "warn"],
+              ["Auth stability", "In review", "warn"],
+              ["Launch metrics", "Ready", "good"],
             ].map(([label, value, tone]) => (
-              <div key={label} className="flex items-center justify-between rounded-xl border border-border bg-slate-50/70 px-4 py-3 dark:bg-slate-950/40">
+              <div key={label} className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
                 <span className="text-sm text-muted">{label}</span>
-                <StatusBadge label={value} tone={tone as "good" | "neutral"} />
+                <StatusBadge label={value} tone={tone as "good" | "warn"} />
               </div>
             ))}
           </div>
         </Card>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <MetricCard label="Total agent runs" value="128" detail="Demo workspace activity" trend="+18%" />
-        <MetricCard label="Latest reports" value="12" detail="Generated this sprint" trend="4 today" />
-        <MetricCard label="Open risks" value="3" detail="1 medium, 2 low" trend="stable" />
-        <MetricCard label="KB documents" value="12" detail="Tickets, docs, chat" trend="indexed" />
-        <MetricCard label="Eval score" value="92%" detail="Faithfulness baseline" trend="pass" />
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricCard label="Are we on track?" value="Mostly" detail="Launch can proceed after one focused staging pass." trend="83%" />
+        <MetricCard label="What is blocked?" value="0" detail="No hard blockers; 2 watch items need owner attention." trend="clear" />
+        <MetricCard label="Needs attention" value="3" detail="Retry handling, auth stability, release-note citations." trend="this week" />
+        <MetricCard label="Changed this week" value="4" detail="Key updates across payments, auth, metrics, release notes." trend="fresh" />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-        <Card>
+        <Card className="p-6">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <CardTitle>Latest status reports</CardTitle>
-              <CardDescription>Generated project updates ready for review or export.</CardDescription>
+              <CardTitle>What should I pay attention to?</CardTitle>
+              <CardDescription>Ranked items for the next product or leadership sync.</CardDescription>
             </div>
-            <FileText className="h-5 w-5 text-muted" />
+            <Bell className="h-5 w-5 text-sky-600" />
           </div>
           <div className="mt-5 space-y-3">
-            {reports.map((report) => (
-              <div key={report.title} className="rounded-xl border border-border bg-card p-4 transition hover:border-slate-300 dark:hover:border-slate-700">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="font-medium">{report.title}</p>
-                  <span className="text-xs text-muted">{report.time}</span>
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <Badge>{report.owner}</Badge>
-                  <Badge>{report.status}</Badge>
-                </div>
+            {attention.map((item, index) => (
+              <div key={item} className="flex gap-4 rounded-2xl bg-slate-50 p-4">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-slate-700 ring-1 ring-slate-200">{index + 1}</span>
+                <p className="text-sm leading-6 text-slate-700">{item}</p>
               </div>
             ))}
           </div>
         </Card>
 
-        <Card>
+        <Card className="p-6">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <CardTitle>Recent traces</CardTitle>
-              <CardDescription>Agent execution path for the latest report run.</CardDescription>
+              <CardTitle>What changed this week?</CardTitle>
+              <CardDescription>Important movement distilled from project evidence.</CardDescription>
             </div>
-            <GitBranch className="h-5 w-5 text-muted" />
+            <CalendarDays className="h-5 w-5 text-sky-600" />
           </div>
           <div className="mt-5 space-y-3">
-            {traces.map((trace, index) => (
-              <div key={`${trace.agent}-${trace.step}`} className="grid grid-cols-[1.5rem_1fr_auto] items-center gap-3 rounded-xl border border-border bg-slate-50/70 p-3 dark:bg-slate-950/40">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-xs font-semibold text-background">{index + 1}</span>
+            {changes.map((change) => (
+              <div key={change.title} className="grid grid-cols-[1fr_auto] gap-4 rounded-2xl bg-slate-50 p-4">
                 <div>
-                  <p className="text-sm font-medium">{trace.step}</p>
-                  <p className="text-xs text-muted">{trace.agent} agent</p>
+                  <p className="text-sm font-medium text-slate-900">{change.title}</p>
+                  <p className="mt-1 text-xs text-muted">Owner: {change.owner}</p>
                 </div>
-                <span className="text-xs text-muted">{trace.time}</span>
+                <Badge>{change.time}</Badge>
               </div>
             ))}
           </div>
         </Card>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-4">
-        {[
-          { icon: Bot, title: "Agent orchestration", text: "Supervisor routes work to status, risk, and documentation agents." },
-          { icon: Database, title: "Knowledge layer", text: "Ticket, chat, and document evidence with metadata and citations." },
-          { icon: Radar, title: "Risk intelligence", text: "Highlights blocker signals before sprint updates drift." },
-          { icon: CheckCircle2, title: "Eval-ready outputs", text: "Structured reports expose confidence, traces, and quality scoring." },
-        ].map((item) => {
-          const Icon = item.icon;
-          return (
-            <Card key={item.title} className="p-5">
-              <Icon className="h-5 w-5 text-muted" />
-              <p className="mt-4 font-medium">{item.title}</p>
-              <p className="mt-2 text-sm leading-6 text-muted">{item.text}</p>
-            </Card>
-          );
-        })}
+      <section className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
+        <Card className="p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle>Latest status report</CardTitle>
+              <CardDescription>Executive-ready summary generated from project context.</CardDescription>
+            </div>
+            <StatusBadge label="Medium risk" tone="warn" />
+          </div>
+          <div className="mt-6 rounded-2xl bg-slate-50 p-5">
+            <p className="text-base leading-8 text-slate-800">
+              Checkout launch is progressing, but should remain in medium-risk status until payment retry behavior and session refresh reliability pass one more staging validation.
+            </p>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {[
+              ["Owners", "Rahul, Isha, Nora"],
+              ["Next decision", "Launch sign-off"],
+              ["Recommended action", "Run staging pass"],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted">{label}</p>
+                <p className="mt-2 text-sm font-medium text-slate-900">{value}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <CardTitle>Signals behind the brief</CardTitle>
+          <CardDescription>High-level evidence categories, not implementation internals.</CardDescription>
+          <div className="mt-5 grid gap-3">
+            {[
+              { icon: GitPullRequest, title: "Ticket movement", text: "Payment and auth work advanced this week." },
+              { icon: CircleAlert, title: "Risk signal", text: "Retry behavior still needs validation." },
+              { icon: CheckCircle2, title: "Done signal", text: "Launch metrics are now visible." },
+              { icon: TrendingUp, title: "Confidence trend", text: "Status improved from last week." },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.title} className="grid grid-cols-[2rem_1fr] gap-3 rounded-2xl bg-slate-50 p-4">
+                  <Icon className="mt-0.5 h-4 w-4 text-sky-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">{item.title}</p>
+                    <p className="mt-1 text-sm leading-6 text-muted">{item.text}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
       </section>
     </div>
   );

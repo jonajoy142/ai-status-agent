@@ -48,7 +48,7 @@ class RiskInsight(BaseModel):
 
 
 class ProjectReport(BaseModel):
-    title: str = "AI Status Agent Report"
+    title: str = "SprintPilot.AI Report"
     executive_summary: str
     status: StatusInsight
     risks: RiskInsight

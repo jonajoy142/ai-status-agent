@@ -4,10 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 const variants = {
-  good: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300",
-  warn: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300",
-  bad: "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300",
-  neutral: "border-border bg-slate-50 text-slate-700 dark:bg-slate-900 dark:text-slate-300",
+  good: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100",
+  warn: "bg-amber-50 text-amber-700 ring-1 ring-amber-100",
+  bad: "bg-red-50 text-red-700 ring-1 ring-red-100",
+  neutral: "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
 };
 
 const icons = {
