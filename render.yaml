@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: ai-status-agent-api
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: LLM_PROVIDER
+        value: demo
+      - key: VECTOR_PROVIDER
+        value: local

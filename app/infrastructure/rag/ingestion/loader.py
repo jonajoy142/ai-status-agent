@@ -7,29 +7,46 @@ DATA_DIR = Path("data")
 def load_documents():
     docs = []
 
-    # tickets
     with open(DATA_DIR / "tickets.json") as f:
         tickets = json.load(f)
-
-        for t in tickets:
+        for ticket in tickets:
+            text = json.dumps(ticket, ensure_ascii=False)
             docs.append({
-                "text": str(t),
-                "metadata": {"source": "tickets"}
+                "text": text,
+                "metadata": {
+                    "source": "tickets",
+                    "title": ticket.get("title", ticket.get("id", "Ticket")),
+                    "id": ticket.get("id", ""),
+                    "owner": ticket.get("assignee", ""),
+                    "status": ticket.get("status", ""),
+                    "priority": ticket.get("priority", ""),
+                },
             })
 
-    # slack
     with open(DATA_DIR / "slack.txt") as f:
-        for line in f.readlines():
+        for index, line in enumerate(f.readlines(), start=1):
+            text = line.strip()
+            if not text:
+                continue
             docs.append({
-                "text": line,
-                "metadata": {"source": "slack"}
+                "text": text,
+                "metadata": {
+                    "source": "slack",
+                    "title": f"Engineering chat update {index}",
+                    "id": f"slack-{index}",
+                },
             })
 
-    # docs
     with open(DATA_DIR / "docs.md") as f:
-        docs.append({
-            "text": f.read(),
-            "metadata": {"source": "docs"}
-        })
+        text = f.read().strip()
+        if text:
+            docs.append({
+                "text": text,
+                "metadata": {
+                    "source": "docs",
+                    "title": "Project Phoenix Engineering Brief",
+                    "id": "project-phoenix-brief",
+                },
+            })
 
     return docs

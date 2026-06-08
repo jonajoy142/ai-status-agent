@@ -1,7 +1,9 @@
 import json
 
-class FileTicketRepository(TicketRepository):
+from app.domain.interfaces.ticket_repository import TicketRepository
 
+
+class FileTicketRepository(TicketRepository):
     def __init__(self, path="data/tickets.json"):
         self.path = path
 

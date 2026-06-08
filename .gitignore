@@ -13,3 +13,9 @@ vector_db/
 
 # Environment
 .env
+.idea/
+.pytest_cache/
+.ruff_cache/
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local

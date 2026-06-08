@@ -4,7 +4,6 @@ reranker_llm = ChatOllama(model="llama3")
 
 
 def rerank(query: str, docs: list[str]):
-
     if not docs:
         return docs
 
@@ -28,5 +27,5 @@ Example: 0,2,3
     try:
         indexes = [int(i) for i in response.split(",")]
         return [docs[i] for i in indexes if i < len(docs)]
-    except:
+    except (TypeError, ValueError, IndexError):
         return docs[:3]

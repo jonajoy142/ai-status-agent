@@ -1,0 +1,6 @@
+2026-06-03 #payments Rahul: Stripe webhook verification is passing in staging. Remaining work is idempotent order update handling for retries.
+2026-06-03 #payments Maya: Refund API implementation should start after PAY-231 is stable. Admin workflow designs are ready.
+2026-06-04 #checkout Priya: Checkout QA found one intermittent session refresh issue during long-running payment attempts. Tracking under AUTH-118.
+2026-06-05 #release Nora: Release notes automation can generate draft summaries, but citations need cleanup before customer-facing use.
+2026-06-05 #eng-leads Dev: Observability dashboard is live with payment funnel latency and webhook failure alerts.
+2026-06-06 #payments Rahul: Main launch risk is payment retry behavior. No blocker yet, but we need one more staging pass before release sign-off.
