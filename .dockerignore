@@ -4,6 +4,9 @@ __pycache__
 .pytest_cache
 .ruff_cache
 vector_db
+data/*.db
+data/*.sqlite
+data/*.sqlite3
 .idea
 .env
 frontend/node_modules

@@ -6,7 +6,7 @@ from opentelemetry import trace
 
 from app.domain.models.agent_run import TraceStep
 
-tracer = trace.get_tracer("ai-status-agent")
+tracer = trace.get_tracer("sprintpilot-ai")
 
 
 class InMemoryTraceStore:

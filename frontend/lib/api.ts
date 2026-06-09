@@ -133,3 +133,93 @@ export async function runAgent(question: string): Promise<AgentRunResponse> {
 
   return response.json();
 }
+
+export async function apiGet<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`GET ${path} failed with status ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!response.ok) {
+    throw new Error(`POST ${path} failed with status ${response.status}`);
+  }
+  return response.json();
+}
+
+export type WorkItemDto = {
+  id: string;
+  external_id: string;
+  title: string;
+  status: string;
+  priority: string;
+  assignee: string;
+  sprint: string;
+  source: string;
+  risk_level: "low" | "medium" | "high";
+  stale_score: number;
+  business_impact: string;
+  suggested_next_action: string;
+};
+
+export type RiskDto = {
+  id: string;
+  title: string;
+  level: "low" | "medium" | "high";
+  owner: string;
+  business_impact: string;
+  recommended_action: string;
+};
+
+export type DecisionDto = {
+  id: string;
+  title: string;
+  owner: string;
+  due_date: string;
+  impact_if_delayed: string;
+};
+
+export type ReportDto = {
+  id: string;
+  type: string;
+  title: string;
+  summary: string;
+  confidence_score: number;
+  shipped_work: string[];
+  blocked_work: string[];
+  risks: string[];
+  decisions_needed: string[];
+  action_items: string[];
+  citations: string[];
+};
+
+export type ConnectorDto = {
+  id: string;
+  name: string;
+  status: string;
+  auth_type: string;
+  last_synced_at?: string | null;
+  scopes: string[];
+  env_vars: string[];
+};
+
+export type DashboardDto = {
+  role: string;
+  headline: string;
+  sprint_health: number;
+  open_risks: number;
+  blocked_work: number;
+  decisions_needed: number;
+  business_impact: string;
+  weekly_brief_preview: string;
+  suggested_next_actions: string[];
+  latest_changes: string[];
+  owner_workload: Record<string, number>;
+};

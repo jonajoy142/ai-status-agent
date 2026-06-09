@@ -49,3 +49,39 @@ def test_knowledge_sources_include_project_data():
     assert sources["tickets"]["documents"] >= 1
     assert sources["slack"]["documents"] >= 1
     assert sources["docs"]["documents"] >= 1
+
+
+def test_operating_product_endpoints_return_demo_data():
+    dashboard = client.get("/dashboard?role=founder")
+    work_items = client.get("/work-items")
+    risks = client.get("/risks")
+    connectors = client.get("/connectors")
+    evaluations = client.get("/evaluations/summary")
+
+    assert dashboard.status_code == 200
+    assert dashboard.json()["sprint_health"] >= 1
+    assert work_items.status_code == 200
+    assert work_items.json()["work_items"]
+    assert risks.status_code == 200
+    assert risks.json()["risks"]
+    assert connectors.status_code == 200
+    assert connectors.json()["connectors"]
+    assert evaluations.status_code == 200
+    assert evaluations.json()["average_score"] >= 1
+
+
+def test_mcp_ready_external_tool_descriptors_are_discoverable():
+    response = client.get("/agent/tools")
+
+    tool_names = {tool["name"] for tool in response.json()["tools"]}
+    assert {
+        "jira.search_issues",
+        "jira.get_issue",
+        "jira.get_comments",
+        "jira.sync_project",
+        "github.search_prs",
+        "github.get_pr_status",
+        "slack.search_messages",
+        "confluence.search_pages",
+        "notion.search_docs",
+    }.issubset(tool_names)

@@ -1,98 +1,22 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, FileBadge, ListChecks, Radar } from "lucide-react";
+import { ArrowRight, FileBadge, ListChecks, MessageSquareText, Radar } from "lucide-react";
 
 import { CopyButton } from "@/components/copy-button";
 import { StatusBadge } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
-
-const reportText = "Checkout launch is progressing with medium risk. Stripe gateway work is in progress, launch metrics are live, and the remaining launch concern is retry-safe payment handling plus auth session stability.";
+import { API_BASE_URL, apiGet, type ReportDto } from "@/lib/api";
+import { reports as fallbackReports } from "@/lib/demo-data";
 
 export default function ReportsPage() {
-  return (
-    <div className="space-y-6 reveal-up">
-      <Card className="grid gap-6 p-7 lg:grid-cols-[1fr_auto] lg:items-center">
-        <div>
-          <Badge>Reports</Badge>
-          <h1 className="mt-5 font-display text-4xl font-semibold tracking-[-0.05em]">Operating reports your team can actually use.</h1>
-          <p className="mt-4 max-w-3xl text-base leading-8 text-muted">
-            Generate sprint summaries, risk summaries, and action items from source-backed project activity. Designed to reduce manual Jira status rollups.
-          </p>
-        </div>
-        <Link href="/agent-run">
-          <Button>
-            Generate report <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </Link>
-      </Card>
+  const [reports, setReports] = useState<ReportDto[] | null>(null);
+  useEffect(() => { apiGet<{ reports: ReportDto[] }>("/reports").then((data) => setReports(data.reports)).catch(() => setReports(null)); }, []);
+  const reportRows = reports || fallbackReports.map((report, i) => ({ id: `report-${i}`, type: report.type, title: report.title, summary: report.summary, confidence_score: report.confidence, shipped_work: [], blocked_work: [], risks: [], decisions_needed: [], action_items: [], citations: [] }));
+  const primary = reportRows[0];
 
-      <section className="grid gap-5 md:grid-cols-3">
-        {[
-          { icon: FileBadge, title: "Sprint summary", text: "What changed, who owns it, and what is ready for leadership review." },
-          { icon: Radar, title: "Risk summary", text: "Blockers, severity, source evidence, and recommended escalation paths." },
-          { icon: ListChecks, title: "Action items", text: "Next steps assigned from agent-generated project intelligence." },
-        ].map((section) => {
-          const Icon = section.icon;
-          return (
-            <Card key={section.title}>
-              <Icon className="h-5 w-5 text-muted" />
-              <CardTitle className="mt-5">{section.title}</CardTitle>
-              <CardDescription>{section.text}</CardDescription>
-            </Card>
-          );
-        })}
-      </section>
-
-      <section className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
-        <Card className="p-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle>Report preview</CardTitle>
-              <CardDescription>Checkout launch readiness · generated today</CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              <StatusBadge label="Medium risk" tone="warn" />
-              <CopyButton text={reportText} label="Copy" />
-            </div>
-          </div>
-          <div className="mt-6 rounded-2xl border border-border bg-slate-50/70 p-5 dark:bg-slate-950/40">
-            <p className="text-sm font-medium uppercase tracking-[0.14em] text-muted">Executive summary</p>
-            <p className="mt-4 text-base leading-8">{reportText}</p>
-          </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            {[
-              ["Active work", "PAY-231, AUTH-118, REL-077"],
-              ["Owners", "Rahul, Isha, Nora"],
-              ["Next step", "Run staging validation"],
-            ].map(([label, value]) => (
-              <div key={label} className="rounded-xl border border-border p-4">
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted">{label}</p>
-                <p className="mt-2 text-sm font-medium">{value}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        <Card>
-          <CardTitle>Operating briefs</CardTitle>
-          <div className="mt-5 space-y-3">
-            {[
-              ["Checkout launch readiness", "Medium risk", "Today"],
-              ["Sprint 14 summary", "On track", "Yesterday"],
-              ["Release notes automation", "Needs review", "Jun 6"],
-            ].map(([title, status, date]) => (
-              <div key={title} className="rounded-xl border border-border bg-card p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-medium">{title}</p>
-                  <span className="text-xs text-muted">{date}</span>
-                </div>
-                <div className="mt-3"><Badge>{status}</Badge></div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </section>
-    </div>
-  );
+  return <div className="space-y-6 reveal-up"><Card className="grid gap-6 p-7 lg:grid-cols-[1fr_auto] lg:items-center"><div><Badge>Weekly Reports</Badge><h1 className="mt-5 font-display text-4xl font-semibold tracking-[-0.05em]">Operating reports your team can actually use.</h1><p className="mt-4 max-w-3xl text-base leading-8 text-muted">Generate founder briefs, PM sprint updates, EM updates, release notes, Slack summaries, and risk reports from source-backed project activity.</p></div><Link href="/agent-run"><Button>Generate report <ArrowRight className="ml-2 h-4 w-4" /></Button></Link></Card><section className="grid gap-5 md:grid-cols-3">{[{ icon: FileBadge, title: "Founder brief", text: "Executive status, risks, business impact, and decisions needed." }, { icon: Radar, title: "Risk report", text: "Blockers, severity, source evidence, and recommended escalation paths." }, { icon: MessageSquareText, title: "Slack-ready summary", text: "Short weekly update that can be pasted into leadership channels." }].map((section) => { const Icon = section.icon; return <Card key={section.title}><Icon className="h-5 w-5 text-muted" /><CardTitle className="mt-5">{section.title}</CardTitle><CardDescription>{section.text}</CardDescription></Card>; })}</section><section className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]"><Card className="p-6"><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><CardTitle>Report preview</CardTitle><CardDescription>{primary.title} · generated today</CardDescription></div><div className="flex items-center gap-2"><StatusBadge label={`${primary.confidence_score}% confidence`} tone="good" /><CopyButton text={primary.summary} label="Copy" /><a href={`${API_BASE_URL}/reports/${primary.id}/export`} className="rounded-lg bg-white px-3 py-2 text-sm font-medium ring-1 ring-slate-200">Export MD</a></div></div><div className="mt-6 rounded-2xl bg-slate-50 p-5"><p className="text-sm font-medium uppercase tracking-[0.14em] text-muted">Executive summary</p><p className="mt-4 text-base leading-8">{primary.summary}</p></div><div className="mt-4 grid gap-3 md:grid-cols-3">{[["Shipped", primary.shipped_work[0] || "Webhook verification, metrics"], ["Blocked", primary.blocked_work[0] || "No hard blockers"], ["Action", primary.action_items[0] || "Run staging validation"]].map(([label, value]) => <div key={label} className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-medium uppercase tracking-[0.14em] text-muted">{label}</p><p className="mt-2 text-sm font-medium">{value}</p></div>)}</div></Card><Card><CardTitle>Report library</CardTitle><div className="mt-5 space-y-3">{reportRows.map((report) => <div key={report.id} className="rounded-xl bg-slate-50 p-4"><div className="flex items-center justify-between gap-3"><p className="text-sm font-medium">{report.type}</p><Badge>{report.confidence_score}%</Badge></div><p className="mt-1 text-sm text-slate-900">{report.title}</p><p className="mt-2 line-clamp-2 text-sm leading-6 text-muted">{report.summary}</p></div>)}</div></Card></section><Card><div className="flex items-center gap-2"><ListChecks className="h-5 w-5 text-sky-600" /><CardTitle>Every report includes</CardTitle></div><div className="mt-5 grid gap-3 md:grid-cols-3">{["Summary", "Shipped work", "Blocked work", "Risks", "Decisions needed", "Action items", "Source citations", "Confidence score"].map((item) => <div key={item} className="rounded-2xl bg-slate-50 p-4 text-sm font-medium text-slate-700">{item}</div>)}</div></Card></div>;
 }

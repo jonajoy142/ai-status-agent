@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     environment: str = "local"
     cors_origins: str = "http://localhost:3000"
 
+    database_path: str = "data/sprintpilot.db"
     vector_db_path: str = "vector_db"
     vector_provider: str = "local"
     embedding_model: str = "nomic-embed-text"

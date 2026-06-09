@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: ai-status-agent-api
+    name: sprintpilot-ai-api
     runtime: docker
     plan: free
     healthCheckPath: /health
