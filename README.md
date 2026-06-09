@@ -24,7 +24,8 @@ The product is role-first. A founder sees business risk and decisions. A PM sees
 Implemented in this repo:
 
 - Role-aware Next.js SaaS frontend
-- Demo login/logout with role routing
+- Email/password auth, demo OAuth callbacks, refresh-token cookies, and role routing
+- Protected frontend routes with public `/demo`, `/login`, `/register`, `/pricing`, and `/auth/callback`
 - Separate dashboard routes for Founder, PM, Engineering Manager, Developer, and Viewer
 - Role-specific sidebar navigation
 - Weekly Report generator with audience-aware language
@@ -32,9 +33,11 @@ Implemented in this repo:
 - FastAPI backend with normalized demo operating data
 - MCP-compatible tool registry and discovery/execution endpoints
 - Mock Jira, GitHub, Slack, Confluence, Notion, and Linear connector path
-- LangGraph-compatible report workflow module
+- LangGraph agentic workflow with dynamic supervisor re-routing and reflection loop
+- Agentic tool registry where agents select tools from LLM-readable descriptions
 - Pydantic structured output schemas
 - RAG-style source retrieval with citations
+- Per-workspace vector-store abstraction with local demo backend and Chroma/Qdrant-ready boundary
 - Deterministic evaluation framework for groundedness, citation coverage, completeness, actionability, token use, and cost estimate
 - OpenTelemetry span hooks, trace store, tool traces, and `/metrics` Prometheus-style endpoint
 
@@ -50,7 +53,7 @@ Use `/login` or `/role-select`.
 | Developer | dev@demo.sprintpilot.ai | demo123 |
 | Viewer | viewer@demo.sprintpilot.ai | demo123 |
 
-Password is shown for demo realism. Current auth is lightweight local demo auth and can be replaced with NextAuth, Clerk, or Supabase Auth.
+Password is shown for demo realism. Current auth uses FastAPI signed access tokens, backend refresh-token storage, and httpOnly refresh cookies. OAuth routes run in demo mode until Google/GitHub credentials are configured.
 
 ## Role System
 
@@ -68,12 +71,14 @@ Password is shown for demo realism. Current auth is lightweight local demo auth 
 flowchart TD
     UI[Next.js Role-First SaaS UI] --> API[FastAPI Backend]
     API --> Store[SQLite Demo Store / Postgres-ready boundary]
+    API --> Auth[Auth Service + Workspace Roles]
     API --> AgentService[Agent Service]
     API --> MCP[MCP-Compatible Tool Registry]
     API --> Eval[Evaluation Framework]
     API --> Metrics[/metrics]
 
     AgentService --> Supervisor[Supervisor Agent]
+    Supervisor --> Reroute[Dynamic Re-Routing]
     Supervisor --> Status[Status Agent]
     Supervisor --> Risk[Risk Agent]
     Supervisor --> Decision[Decision Agent]
@@ -90,6 +95,8 @@ flowchart TD
     AgentService --> Retrieval[RAG Retrieval]
     Retrieval --> Sources[Tickets + PRs + Slack + Docs]
     Sources --> Citations[Source Citations]
+    Evaluation --> Reflection[Reflection Loop]
+    Reflection --> Retrieval
 ```
 
 ## Agent System
@@ -97,7 +104,9 @@ flowchart TD
 Backend modules demonstrate production agentic architecture without requiring external credentials for local demo mode.
 
 - `app/infrastructure/agents/supervisor_agent.py`: existing multi-agent orchestration service used by `/agent/run`
-- `app/infrastructure/agents/graph.py`: LangGraph-compatible weekly report workflow
+- `app/infrastructure/agents/graph.py`: LangGraph workflow with supervisor re-planning, dynamic re-routing, and evaluation loopback
+- `app/infrastructure/agents/state.py`: typed `AgentState` carrying execution memory
+- `app/infrastructure/agents/agentic_tool_registry.py`: LLM-readable tool registry for autonomous tool selection
 - `app/infrastructure/agents/status_agent.py`: sprint and ticket status extraction
 - `app/infrastructure/agents/risk_agent.py`: blocker and risk detection
 - `app/infrastructure/agents/decision_agent.py`: decision extraction scaffold
@@ -108,8 +117,14 @@ Backend modules demonstrate production agentic architecture without requiring ex
 Workflow stages:
 
 ```text
-supervisor -> ingest -> retrieve -> status -> risk -> decisions -> impact -> report -> evaluate
+supervisor -> retrieve -> supervisor -> status -> supervisor -> risk -> supervisor -> decision? -> impact -> action -> report -> evaluate -> retrieve? -> END
 ```
+
+Agentic properties implemented:
+
+- Dynamic re-routing: supervisor inspects intermediate state after every node and inserts `decision` when critical risk appears.
+- Tool-calling autonomy: status, risk, retrieval, and report nodes choose tools from the agentic registry based on state and tool descriptions.
+- Reflection loop: evaluation can reject output and route back to retrieval with a stronger query up to two times.
 
 ## MCP-Compatible Tool Registry
 
@@ -152,6 +167,17 @@ Registered tool families:
 - `project.search_chat`
 - `project.search_docs`
 
+Agentic graph tools:
+
+- `jira.get_sprint_tickets`
+- `jira.get_blocked_tickets`
+- `github.get_stale_prs`
+- `slack.search_messages`
+- `vector.semantic_search`
+- `analysis.detect_capacity_overload`
+- `analysis.compute_sprint_health`
+- `reports.generate_role_brief`
+
 ## RAG Pipeline
 
 ```mermaid
@@ -166,6 +192,13 @@ flowchart LR
 ```
 
 Current local mode uses deterministic retrieval over seeded tickets, Slack-style updates, and docs. Chroma support remains in the repository; Qdrant can be added behind the same retrieval boundary.
+
+Additional RAG modules:
+
+- `app/infrastructure/rag/vector_store/workspace_store.py`
+- `app/infrastructure/rag/ingestion/workspace_pipeline.py`
+
+These provide per-workspace collection naming, local deterministic search, Chroma/Qdrant-ready backend selection, and Jira/GitHub/Slack ingestion into source-attributed documents.
 
 ## Structured Outputs
 
@@ -212,6 +245,8 @@ Implemented:
 - Latency metadata
 - Token/cost estimates
 - `/metrics` endpoint
+- Agent run event tracer
+- WebSocket-ready route at `/ws/agent-run/{workspace_id}`
 
 Metrics endpoint:
 
@@ -234,6 +269,16 @@ GET  /api/teams
 GET  /api/priorities
 GET  /api/prs
 GET  /api/sprints/current
+POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/refresh
+POST /api/auth/logout
+GET  /api/auth/oauth/{provider}
+GET  /api/users/me
+POST /api/agentic/run
+GET  /api/agent-runs
+GET  /api/agent-runs/{run_id}
+WS   /ws/agent-run/{workspace_id}
 GET  /mcp/tools
 POST /mcp/tools/{tool_name}/execute
 GET  /metrics

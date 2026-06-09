@@ -1,12 +1,13 @@
 from typing import Any
 
-from fastapi import APIRouter, Header, HTTPException, Response
+from fastapi import APIRouter, Header, HTTPException, Response, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
 from app.application.dto.agent_request import AgentRunRequest
 from app.application.services.status_service import StatusService
 from app.config.settings import settings
 from app.infrastructure.agents.tracing import get_trace
+from app.infrastructure.agents.graph import run_report_graph
 from app.domain.models.operating import WeeklyReportRequest
 from app.infrastructure.demo.operating_data import (
     BUSINESS_PRIORITIES,
@@ -20,6 +21,7 @@ from app.infrastructure.demo.operating_data import (
 from app.infrastructure.mcp.tool_registry import ToolAuthContext, ToolExecutionOptions
 from app.infrastructure.rag.ingestion.loader import load_documents
 from app.infrastructure.storage import store
+from app.infrastructure.observability.agent_run_tracer import agent_run_tracer
 
 router = APIRouter()
 service = StatusService()
@@ -40,6 +42,13 @@ class ToolExecuteRequest(BaseModel):
     user_id: str = "demo-user"
 
 
+class AgenticRunRequest(BaseModel):
+    workspace_id: str = "demo-workspace"
+    role: str = "founder"
+    query: str = "What is the current execution status and risk?"
+    report_type: str = "weekly"
+
+
 @router.post("/query")
 def query_agent(req: QueryRequest):
     result = service.get_status(req.question)
@@ -51,6 +60,34 @@ def run_agent(req: AgentRunRequest, x_demo_role: str = Header(default="founder")
     result = service.run(question=req.question, session_id=req.session_id)
     store.audit(actor=x_demo_role, action="agent.run", target=result.run_id, payload={"question": req.question})
     return result
+
+
+@router.post("/agentic/run")
+@router.post("/api/agentic/run")
+async def run_agentic_graph(req: AgenticRunRequest, x_demo_role: str = Header(default="founder")):
+    run_id = agent_run_tracer.new_run_id()
+    state = await run_report_graph(workspace_id=req.workspace_id, audience=req.role, query=req.query)
+    events = await agent_run_tracer.emit_state_trace(run_id, req.workspace_id, state)
+    store.audit(actor=x_demo_role, action="agentic.run", target=run_id, payload={"role": req.role, "query": req.query, "events": len(events)})
+    return {
+        "run_id": run_id,
+        "workspace_id": req.workspace_id,
+        "status": "completed" if state.get("evaluation_result", {}).get("overall_pass", False) else "completed_with_flags",
+        "state": state,
+        "events": events,
+    }
+
+
+@router.get("/agent-runs")
+@router.get("/api/agent-runs")
+def list_agent_runs(workspace_id: str | None = None):
+    return {"events": agent_run_tracer.list_events(workspace_id=workspace_id)}
+
+
+@router.get("/agent-runs/{run_id}")
+@router.get("/api/agent-runs/{run_id}")
+def agent_run_detail(run_id: str):
+    return {"run_id": run_id, "events": agent_run_tracer.list_events(run_id=run_id)}
 
 
 @router.get("/agent/tools")
@@ -97,6 +134,20 @@ def execute_mcp_tool(tool_name: str, req: ToolExecuteRequest, x_demo_role: str =
 @router.get("/trace")
 def get_agent_trace(run_id: str | None = None):
     return {"trace": get_trace(run_id)}
+
+
+@router.websocket("/ws/agent-run/{workspace_id}")
+async def agent_run_websocket(websocket: WebSocket, workspace_id: str):
+    await websocket.accept()
+    try:
+        await websocket.send_json({"event_type": "connected", "workspace_id": workspace_id})
+        for event in agent_run_tracer.list_events(workspace_id=workspace_id):
+            await websocket.send_json(event)
+        while True:
+            await websocket.receive_text()
+            await websocket.send_json({"event_type": "heartbeat", "workspace_id": workspace_id})
+    except WebSocketDisconnect:
+        return
 
 
 @router.get("/demo/users")

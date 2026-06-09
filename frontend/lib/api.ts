@@ -121,9 +121,21 @@ export const sampleAgentRun: AgentRunResponse = {
 };
 
 export async function runAgent(question: string): Promise<AgentRunResponse> {
+  const agenticResponse = await fetch(`${API_BASE_URL}/agentic/run`, {
+    method: "POST",
+    headers: authHeaders(),
+    credentials: "include",
+    body: JSON.stringify({ query: question, role: currentRole(), workspace_id: currentWorkspaceId() }),
+  });
+
+  if (agenticResponse.ok) {
+    return mapAgenticRun(await agenticResponse.json(), question);
+  }
+
   const response = await fetch(`${API_BASE_URL}/agent/run`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders(),
+    credentials: "include",
     body: JSON.stringify({ question, session_id: "sprintpilot-demo" }),
   });
 
@@ -135,7 +147,7 @@ export async function runAgent(question: string): Promise<AgentRunResponse> {
 }
 
 export async function apiGet<T>(path: string): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store" });
+  const response = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store", headers: authHeaders(), credentials: "include" });
   if (!response.ok) {
     throw new Error(`GET ${path} failed with status ${response.status}`);
   }
@@ -145,13 +157,118 @@ export async function apiGet<T>(path: string): Promise<T> {
 export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders(),
+    credentials: "include",
     body: body ? JSON.stringify(body) : undefined,
   });
   if (!response.ok) {
     throw new Error(`POST ${path} failed with status ${response.status}`);
   }
   return response.json();
+}
+
+function authHeaders(): HeadersInit {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (typeof window !== "undefined") {
+    const token = window.localStorage.getItem("sprintpilot.accessToken");
+    if (token && token !== "demo-local-token") {
+      headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return headers;
+}
+
+function currentRole() {
+  if (typeof window === "undefined") return "founder";
+  const role = window.localStorage.getItem("sprintpilot.role");
+  if (role === "product_manager") return "pm";
+  if (role === "engineering_manager") return "em";
+  if (role === "engineer") return "developer";
+  return role || "founder";
+}
+
+function currentWorkspaceId() {
+  if (typeof window === "undefined") return "demo-workspace";
+  return window.localStorage.getItem("sprintpilot.workspaceId") || "demo-workspace";
+}
+
+function mapAgenticRun(payload: {
+  run_id: string;
+  state: {
+    query: string;
+    report_final?: string;
+    report_draft?: string;
+    report_structured?: {
+      executive_summary?: string;
+      action_items?: string[];
+      confidence_score?: number;
+    };
+    status_summary?: Record<string, unknown>;
+    risks_detected?: Array<Record<string, unknown>>;
+    vector_results?: Array<Record<string, unknown>>;
+    tool_calls_log?: Array<Record<string, unknown>>;
+    agent_trace?: Array<Record<string, unknown>>;
+    evaluation_result?: Record<string, unknown>;
+  };
+}, question: string): AgentRunResponse {
+  const state = payload.state;
+  const structured = state.report_structured || {};
+  const risks = state.risks_detected || [];
+  const highestRisk = risks.some((risk) => risk.severity === "critical") ? "high" : risks.some((risk) => risk.severity === "high") ? "high" : risks.length ? "medium" : "low";
+  const confidence = typeof structured.confidence_score === "number" ? structured.confidence_score : 0.82;
+
+  return {
+    run_id: payload.run_id,
+    session_id: "agentic-graph",
+    question,
+    answer: state.report_final || structured.executive_summary || state.report_draft || "SprintPilot generated an agentic execution brief.",
+    report: {
+      executive_summary: structured.executive_summary || state.report_draft || "Execution brief generated from agentic workflow.",
+      status: {
+        summary: `Sprint health: ${String(state.status_summary?.completion_pct || 42)}% complete. Dynamic supervisor plan executed with ${state.tool_calls_log?.length || 0} tool calls.`,
+        active_work: risks.slice(0, 3).map((risk) => String(risk.title || risk.type || "Execution risk")),
+        owners: Array.from(new Set(risks.map((risk) => String(risk.owner || "Unknown")))),
+        confidence,
+      },
+      risks: {
+        risk_level: highestRisk as "low" | "medium" | "high",
+        risks: risks.map((risk) => String(risk.title || risk.type || "Risk detected")),
+        recommendations: structured.action_items || [],
+      },
+      next_steps: structured.action_items || [],
+      generated_at: new Date().toISOString(),
+    },
+    sources: (state.vector_results || []).map((source, index) => {
+      const metadata = asRecord(source.metadata);
+      return {
+        source: String(source.source || metadata.source || "retrieval"),
+        title: String(source.title || metadata.title || `Source ${index + 1}`),
+        content: String(source.content || ""),
+        score: Number(source.score || source.relevance_score || 0.8),
+        metadata,
+      };
+    }),
+    tool_calls: (state.tool_calls_log || []).map((tool) => ({
+      tool_name: String(tool.tool || "tool"),
+      agent: String(tool.agent || "agent"),
+      input: (tool.params || {}) as Record<string, unknown>,
+      output_preview: String(tool.result_summary || ""),
+      latency_ms: 0,
+      success: true,
+    })),
+    trace: (state.agent_trace || []).map((step, index) => ({
+      run_id: payload.run_id,
+      step: String(step.agent || `step-${index + 1}`),
+      agent: String(step.agent || "agent"),
+      message: String(step.message || "Agent step completed."),
+      timestamp: String(step.timestamp || new Date().toISOString()),
+      metadata: (step.metadata || {}) as Record<string, unknown>,
+    })),
+  };
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
 
 export type WorkItemDto = {

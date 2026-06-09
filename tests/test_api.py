@@ -133,3 +133,36 @@ def test_metrics_endpoint_exposes_prometheus_text():
     assert response.status_code == 200
     assert "sprintpilot_agent_run_total" in response.text
     assert "sprintpilot_evaluation_score" in response.text
+
+
+def test_auth_login_refresh_and_me_flow():
+    login = client.post("/api/auth/login", json={"email": "founder@demo.sprintpilot.ai", "password": "demo123"})
+
+    assert login.status_code == 200
+    payload = login.json()
+    assert payload["access_token"]
+    assert payload["role"] == "founder"
+
+    me = client.get("/api/users/me", headers={"Authorization": f"Bearer {payload['access_token']}"})
+    assert me.status_code == 200
+    assert me.json()["workspace_id"] == "ws-demo"
+
+    refresh = client.post("/api/auth/refresh")
+    assert refresh.status_code == 200
+    assert refresh.json()["access_token"]
+
+
+def test_agentic_graph_endpoint_dynamic_trace():
+    response = client.post(
+        "/api/agentic/run",
+        json={"workspace_id": "demo-workspace", "role": "founder", "query": "What is blocked for checkout launch?"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    state = payload["state"]
+    assert payload["run_id"]
+    assert "decision" in state["supervisor_plan"]
+    assert state["decisions_surfaced"]
+    assert state["tool_calls_log"]
+    assert state["evaluation_result"]
