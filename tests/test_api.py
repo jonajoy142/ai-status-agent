@@ -85,3 +85,51 @@ def test_mcp_ready_external_tool_descriptors_are_discoverable():
         "confluence.search_pages",
         "notion.search_docs",
     }.issubset(tool_names)
+
+
+def test_role_specific_dashboard_endpoint_shapes():
+    founder = client.get("/api/dashboard/founder")
+    pm = client.get("/api/dashboard/product_manager")
+    em = client.get("/api/dashboard/engineering_manager")
+    engineer = client.get("/api/dashboard/developer")
+
+    assert founder.status_code == 200
+    assert founder.json()["business_priorities"]
+    assert founder.json()["decisions_needed_items"]
+    assert pm.status_code == 200
+    assert pm.json()["sprint"]["percent_complete"] == 42
+    assert pm.json()["blocked_tickets"]
+    assert em.status_code == 200
+    assert em.json()["team_capacity"]
+    assert em.json()["pr_delays"]
+    assert engineer.status_code == 200
+    assert engineer.json()["my_tasks"]
+
+
+def test_weekly_report_generation_is_audience_aware():
+    founder = client.post("/api/reports/weekly/generate", json={"audience": "founder"})
+    em = client.post("/api/reports/weekly/generate", json={"audience": "engineering_manager"})
+
+    assert founder.status_code == 200
+    assert em.status_code == 200
+    assert founder.json()["audience"] == "founder"
+    assert em.json()["audience"] == "engineering_manager"
+    assert "revenue" in founder.json()["executive_summary"].lower()
+    assert "pr #241" in em.json()["executive_summary"].lower()
+
+
+def test_mcp_endpoint_can_execute_registered_tool():
+    response = client.post("/mcp/tools/jira.search_blocked/execute", json={"inputs": {}})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["tool_call"]["tool_name"] == "jira.search_blocked"
+    assert payload["result"]
+
+
+def test_metrics_endpoint_exposes_prometheus_text():
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+    assert "sprintpilot_agent_run_total" in response.text
+    assert "sprintpilot_evaluation_score" in response.text

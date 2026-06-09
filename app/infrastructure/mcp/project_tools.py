@@ -1,5 +1,6 @@
 from app.domain.models.agent_run import SourceCitation
-from app.infrastructure.demo.operating_data import WORK_ITEMS
+from app.domain.models.operating import WeeklyReportRequest
+from app.infrastructure.demo.operating_data import DECISIONS, PULL_REQUESTS, RISKS, WORK_ITEMS, weekly_report_for_audience
 from app.infrastructure.mcp.tool_registry import ToolDescriptor, ToolRegistry
 from app.infrastructure.rag.retrieval.retriever import retrieve_documents
 
@@ -73,6 +74,22 @@ def build_project_tool_registry() -> ToolRegistry:
         lambda query, k=5: _search_work_items(query, source="Jira")[:k],
     )
     registry.register(
+        ToolDescriptor(name="jira.get_sprint_tickets", description="Get all tickets in the current sprint with owner, risk, blocker, and stale metadata.", input_schema={"type": "object", "properties": {"sprint_id": {"type": "string", "default": "sprint-24"}}}, tags=["jira", "sprint", "mock"], auth_required=True),
+        lambda sprint_id="sprint-24": [item.model_dump(mode="json") for item in WORK_ITEMS if item.sprint == "Sprint 24"],
+    )
+    registry.register(
+        ToolDescriptor(name="jira.search_blocked", description="Find blocked Jira tickets with blocker reason and suggested next action.", input_schema=EMPTY_INPUT_SCHEMA, tags=["jira", "risk", "mock"], auth_required=True),
+        lambda: [item.model_dump(mode="json") for item in WORK_ITEMS if item.blocker_reason],
+    )
+    registry.register(
+        ToolDescriptor(name="jira.search_stale", description="Find stale Jira tickets by stale score threshold.", input_schema={"type": "object", "properties": {"min_stale_score": {"type": "integer", "default": 30}}}, tags=["jira", "risk", "mock"], auth_required=True),
+        lambda min_stale_score=30: [item.model_dump(mode="json") for item in WORK_ITEMS if item.stale_score >= min_stale_score],
+    )
+    registry.register(
+        ToolDescriptor(name="jira.get_owner_workload", description="Compute ticket load by owner for capacity and overload analysis.", input_schema=EMPTY_INPUT_SCHEMA, tags=["jira", "capacity", "mock"], auth_required=True),
+        lambda: {owner: len([item for item in WORK_ITEMS if item.assignee == owner]) for owner in {item.assignee for item in WORK_ITEMS}},
+    )
+    registry.register(
         ToolDescriptor(name="jira.get_issue", description="Mock Jira issue lookup by external issue key.", input_schema={"type": "object", "properties": {"issue_key": {"type": "string"}}, "required": ["issue_key"]}, tags=["jira", "mock"], auth_required=True),
         lambda issue_key: [item.model_dump(mode="json") for item in WORK_ITEMS if item.external_id == issue_key],
     )
@@ -86,7 +103,15 @@ def build_project_tool_registry() -> ToolRegistry:
     )
     registry.register(
         ToolDescriptor(name="github.search_prs", description="Mock GitHub PR search for implementation and review status.", input_schema=SEARCH_INPUT_SCHEMA, tags=["github", "mock"], auth_required=True),
-        lambda query, k=5: [{"number": 42, "title": "Fix checkout session refresh", "status": "review_requested", "owner": "Isha"}],
+        lambda query, k=5: [pr.model_dump(mode="json") for pr in PULL_REQUESTS[:k]],
+    )
+    registry.register(
+        ToolDescriptor(name="github.get_pr_list", description="Get open and recently merged PRs with review status, age, and linked work.", input_schema=EMPTY_INPUT_SCHEMA, tags=["github", "review", "mock"], auth_required=True),
+        lambda: [pr.model_dump(mode="json") for pr in PULL_REQUESTS],
+    )
+    registry.register(
+        ToolDescriptor(name="github.get_pr_delays", description="Find PRs waiting on review for more than two days.", input_schema={"type": "object", "properties": {"min_waiting_days": {"type": "integer", "default": 2}}}, tags=["github", "risk", "mock"], auth_required=True),
+        lambda min_waiting_days=2: [pr.model_dump(mode="json") for pr in PULL_REQUESTS if pr.waiting_days >= min_waiting_days],
     )
     registry.register(
         ToolDescriptor(name="github.get_pr_status", description="Mock GitHub PR status lookup.", input_schema={"type": "object", "properties": {"pr_number": {"type": "integer"}}, "required": ["pr_number"]}, tags=["github", "mock"], auth_required=True),
@@ -103,6 +128,22 @@ def build_project_tool_registry() -> ToolRegistry:
     registry.register(
         ToolDescriptor(name="notion.search_docs", description="Mock Notion document search for plans and meeting notes.", input_schema=SEARCH_INPUT_SCHEMA, tags=["notion", "mock"], auth_required=True),
         lambda query, k=5: _serialize_sources(retrieve_documents(query, source="docs", k=k)),
+    )
+    registry.register(
+        ToolDescriptor(name="docs.search", description="Search the knowledge base using semantic retrieval. Returns chunks with source metadata for citations.", input_schema=SEARCH_INPUT_SCHEMA, tags=["docs", "rag", "mock"], auth_required=False),
+        lambda query, k=5: _serialize_sources(retrieve_documents(query, k=k)),
+    )
+    registry.register(
+        ToolDescriptor(name="reports.generate_weekly", description="Generate an audience-aware structured weekly execution report.", input_schema={"type": "object", "properties": {"audience": {"type": "string", "enum": ["founder", "product_manager", "engineering_manager", "engineer"]}}}, tags=["reports", "agent", "mock"]),
+        lambda audience="founder": weekly_report_for_audience(WeeklyReportRequest(audience=audience)).model_dump(mode="json"),
+    )
+    registry.register(
+        ToolDescriptor(name="risks.detect", description="Run risk detection across sprint work, owner workload, and PR delays.", input_schema=EMPTY_INPUT_SCHEMA, tags=["risks", "agent", "mock"]),
+        lambda: [risk.model_dump(mode="json") for risk in RISKS],
+    )
+    registry.register(
+        ToolDescriptor(name="decisions.extract", description="Extract pending decisions with options, owner, due date, and cost of delay.", input_schema=EMPTY_INPUT_SCHEMA, tags=["decisions", "agent", "mock"]),
+        lambda: [decision.model_dump(mode="json") for decision in DECISIONS],
     )
 
     return registry

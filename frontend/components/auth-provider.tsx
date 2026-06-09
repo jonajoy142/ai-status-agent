@@ -13,11 +13,11 @@ export type DemoUser = {
 };
 
 export const demoUsers: DemoUser[] = [
-  { id: "u-founder", name: "Ananya Rao", email: "founder@sprintpilot.ai", role: "founder", title: "Founder / CEO" },
-  { id: "u-pm", name: "Maya Menon", email: "pm@sprintpilot.ai", role: "product_manager", title: "Product Manager" },
-  { id: "u-em", name: "Dev Shah", email: "em@sprintpilot.ai", role: "engineering_manager", title: "Engineering Manager" },
-  { id: "u-eng", name: "Rahul Iyer", email: "engineer@sprintpilot.ai", role: "engineer", title: "Backend Engineer" },
-  { id: "u-viewer", name: "Nora Lee", email: "viewer@sprintpilot.ai", role: "viewer", title: "Viewer" },
+  { id: "u-founder", name: "Ananya Rao", email: "founder@demo.sprintpilot.ai", role: "founder", title: "Founder / CEO" },
+  { id: "u-pm", name: "Maya Menon", email: "pm@demo.sprintpilot.ai", role: "product_manager", title: "Product Manager" },
+  { id: "u-em", name: "Dev Shah", email: "em@demo.sprintpilot.ai", role: "engineering_manager", title: "Engineering Manager" },
+  { id: "u-eng", name: "Alex Torres", email: "dev@demo.sprintpilot.ai", role: "engineer", title: "Backend Engineer" },
+  { id: "u-viewer", name: "Nora Lee", email: "viewer@demo.sprintpilot.ai", role: "viewer", title: "Viewer" },
 ];
 
 const labels: Record<DemoRole, string> = {

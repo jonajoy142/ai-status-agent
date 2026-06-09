@@ -1,12 +1,12 @@
-import logging
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.agent_routes import router
 from app.config.settings import settings
+from app.infrastructure.observability.logger import configure_logging, get_logger, log_event
 
-logging.basicConfig(level=logging.INFO)
+configure_logging()
+logger = get_logger(__name__)
 
 app = FastAPI(
     title=settings.app_name,
@@ -35,3 +35,4 @@ def health_check():
 
 
 app.include_router(router)
+log_event(logger, "sprintpilot_api_configured", service=settings.app_name, environment=settings.environment)

@@ -64,7 +64,7 @@ export const roleDashboard: Record<DemoRole, {
 };
 
 export const workItems = [
-  { id: "PAY-231", title: "Implement Stripe payment gateway", status: "In Progress", priority: "High", assignee: "Rahul", sprint: "Sprint 14", risk: "Medium", stale: 32, impact: "Checkout launch readiness", next: "Run staging retry validation", source: "Jira" },
+  { id: "TICK-231", title: "Fix retry logic in payments module", status: "In Progress", priority: "High", assignee: "Alex Torres", sprint: "Sprint 24", risk: "High", stale: 76, impact: "Checkout launch readiness", next: "Escalate API spec and use mock fallback", source: "Jira" },
   { id: "AUTH-118", title: "Session refresh reliability", status: "In Review", priority: "High", assignee: "Isha", sprint: "Sprint 14", risk: "Medium", stale: 18, impact: "Checkout conversion stability", next: "Close regression review", source: "Jira" },
   { id: "OBS-042", title: "Checkout metrics dashboard", status: "Done", priority: "Medium", assignee: "Dev", sprint: "Sprint 14", risk: "Low", stale: 4, impact: "Launch incident response", next: "Use in launch review", source: "Jira" },
   { id: "REL-077", title: "Release notes automation", status: "In Progress", priority: "Medium", assignee: "Nora", sprint: "Sprint 14", risk: "Low", stale: 41, impact: "Leadership and customer comms", next: "Clean source citations", source: "ClickUp" },

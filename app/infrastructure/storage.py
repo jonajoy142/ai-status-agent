@@ -11,7 +11,10 @@ from app.infrastructure.demo import operating_data
 
 KIND_SEEDS: dict[str, list[BaseModel]] = {
     "users": operating_data.USERS,
+    "teams": operating_data.TEAMS,
+    "business_priorities": operating_data.BUSINESS_PRIORITIES,
     "work_items": operating_data.WORK_ITEMS,
+    "pull_requests": operating_data.PULL_REQUESTS,
     "risks": operating_data.RISKS,
     "decisions": operating_data.DECISIONS,
     "reports": operating_data.REPORTS,
@@ -69,10 +72,8 @@ class SprintPilotStore:
                 """
             )
             for kind, items in KIND_SEEDS.items():
-                current = conn.execute("SELECT COUNT(*) AS count FROM records WHERE kind = ?", (kind,)).fetchone()["count"]
-                if current == 0:
-                    for item in items:
-                        self._upsert_with_conn(conn, kind, item.id, item.model_dump(mode="json"))
+                for item in items:
+                    self._upsert_with_conn(conn, kind, item.id, item.model_dump(mode="json"))
         self._initialized = True
 
     def list_records(self, kind: str) -> list[dict[str, Any]]:

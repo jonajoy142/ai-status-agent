@@ -4,8 +4,8 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-Role = Literal["founder", "product_manager", "engineering_manager", "engineer", "viewer"]
-RiskLevel = Literal["low", "medium", "high"]
+Role = Literal["founder", "product_manager", "pm", "engineering_manager", "engineer", "developer", "viewer"]
+RiskLevel = Literal["low", "medium", "high", "critical"]
 ConnectorStatus = Literal["connected", "mock", "not_connected", "error"]
 
 
@@ -29,6 +29,42 @@ class Project(BaseModel):
     status: str
     health_score: int
     business_priority: str
+
+
+class Team(BaseModel):
+    id: str
+    name: str
+    lead: str
+    members: list[str]
+    capacity: int
+    completed: int
+    blocked_items: int
+    risk_level: RiskLevel
+    delivery_confidence: int
+    business_priority: str
+
+
+class BusinessPriority(BaseModel):
+    id: str
+    name: str
+    status: Literal["on_track", "delayed", "at_risk"]
+    eta: str
+    owner: str
+    impacted_teams: list[str] = Field(default_factory=list)
+    risk_summary: str
+    business_impact: str
+
+
+class PullRequest(BaseModel):
+    id: str
+    number: int
+    title: str
+    status: str
+    author: str
+    reviewer: str
+    waiting_days: int
+    blocks: str
+    source_url: str
 
 
 class Epic(BaseModel):
@@ -106,7 +142,8 @@ class Decision(BaseModel):
     owner: str
     due_date: str
     impact_if_delayed: str
-    options: list[str] = Field(default_factory=list)
+    context: str = ""
+    options: list[str | dict[str, str]] = Field(default_factory=list)
     source_url: str | None = None
 
 
@@ -152,6 +189,37 @@ class Evaluation(BaseModel):
     latency_ms: int
     token_usage: int
     cost_estimate_usd: float
+
+
+class WeeklyReportRequest(BaseModel):
+    project: str = "Project Phoenix"
+    sprint: str = "Sprint 24"
+    audience: Literal["founder", "product_manager", "pm", "engineering_manager", "developer", "external"] = "founder"
+    include_risks: bool = True
+    include_decisions: bool = True
+    include_citations: bool = True
+    include_business_impact: bool = True
+    include_team_workload: bool = True
+
+
+class WeeklyReportOutput(BaseModel):
+    id: str
+    title: str
+    audience: str
+    sprint_id: str
+    generated_at: str
+    executive_summary: str
+    what_shipped: list[dict[str, str]]
+    what_slipped: list[dict[str, str]]
+    top_risks: list[dict[str, str]]
+    decisions_needed: list[dict[str, str]]
+    team_health: list[dict[str, str | int]]
+    business_impact: list[dict[str, str]]
+    action_items: list[str]
+    confidence_score: float = Field(ge=0.0, le=1.0)
+    citations: list[dict[str, str]]
+    token_usage: int
+    model: str = "demo-structured-generator"
 
 
 class DashboardOverview(BaseModel):

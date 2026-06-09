@@ -163,7 +163,7 @@ export type WorkItemDto = {
   assignee: string;
   sprint: string;
   source: string;
-  risk_level: "low" | "medium" | "high";
+  risk_level: "low" | "medium" | "high" | "critical";
   stale_score: number;
   business_impact: string;
   suggested_next_action: string;
@@ -172,7 +172,7 @@ export type WorkItemDto = {
 export type RiskDto = {
   id: string;
   title: string;
-  level: "low" | "medium" | "high";
+  level: "low" | "medium" | "high" | "critical";
   owner: string;
   business_impact: string;
   recommended_action: string;
