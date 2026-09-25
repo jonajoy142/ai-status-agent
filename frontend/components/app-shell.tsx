@@ -29,6 +29,7 @@ import { useAuth, type DemoRole } from "@/components/auth-provider";
 import { getNavForRole, type NavItem } from "@/lib/nav-configs";
 import { getDashboardRoute } from "@/lib/role-router";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/logo";
 
 const icons = {
   activity: Activity,
@@ -72,17 +73,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
             <Link href="/demo" className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white font-bold text-sm shadow-sm">
-                S
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="font-display text-base font-bold text-slate-900 tracking-tight">
-                  SprintPilot<span className="text-blue-600">.ai</span>
-                </span>
-                <span className="hidden sm:inline-block rounded-md bg-slate-100 border border-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-600">
-                  Engineering RAG
-                </span>
-              </div>
+              <Logo size="md" />
+              <span className="hidden sm:inline-block rounded-md bg-slate-100 border border-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                Engineering RAG
+              </span>
             </Link>
 
             <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-600">
@@ -149,12 +143,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex h-14 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-4">
             <Link href="/demo" className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-white font-bold text-xs shadow-sm">
-                S
-              </div>
-              <span className="font-display text-sm font-bold text-slate-900 hidden sm:inline">
-                SprintPilot<span className="text-blue-600">.ai</span>
-              </span>
+              <Logo size="sm" />
             </Link>
 
             <div className="hidden lg:flex items-center gap-1.5 rounded-lg bg-slate-100 border border-slate-200 px-2.5 py-1 text-xs text-slate-700 font-medium">
