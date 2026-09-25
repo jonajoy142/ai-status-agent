@@ -4,10 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 const variants = {
-  good: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100",
-  warn: "bg-amber-50 text-amber-700 ring-1 ring-amber-100",
-  bad: "bg-red-50 text-red-700 ring-1 ring-red-100",
-  neutral: "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
+  good: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30",
+  warn: "bg-amber-500/10 text-amber-400 border border-amber-500/30",
+  bad: "bg-red-500/10 text-red-400 border border-red-500/30",
+  neutral: "bg-slate-800 text-slate-300 border border-slate-700",
 };
 
 const icons = {
@@ -21,8 +21,8 @@ export function StatusBadge({ label, tone = "neutral" }: { label: string; tone?:
   const Icon = icons[tone];
   return (
     <Badge className={cn("font-medium", variants[tone])}>
-      <Icon className="h-3.5 w-3.5" />
-      {label}
+      <Icon className="h-3 w-3 shrink-0" />
+      <span>{label}</span>
     </Badge>
   );
 }

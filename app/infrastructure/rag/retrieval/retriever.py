@@ -12,7 +12,12 @@ TOKEN_PATTERN = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9_-]+")
 
 
 def _tokenize(text: str) -> list[str]:
-    return [token.lower() for token in TOKEN_PATTERN.findall(text)]
+    tokens = [token.lower() for token in TOKEN_PATTERN.findall(text)]
+    sub_tokens = []
+    for token in tokens:
+        if "-" in token or "_" in token:
+            sub_tokens.extend([part for part in re.split(r"[-_]", token) if part])
+    return tokens + sub_tokens
 
 
 @lru_cache(maxsize=1)
@@ -38,7 +43,7 @@ def _score(query: str, text: str, metadata: dict[str, Any]) -> float:
     if query_norm == 0 or doc_norm == 0:
         return 0.0
 
-    exact_bonus = 0.15 if query.lower() in searchable.lower() else 0.0
+    exact_bonus = 0.25 if any(q in searchable.lower() for q in query.lower().split() if len(q) > 2) else 0.0
     return round((dot / (query_norm * doc_norm)) + exact_bonus, 4)
 
 

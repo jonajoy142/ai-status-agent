@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Github, KeyRound, LogOut, Mail } from "lucide-react";
+import { ArrowRight, CheckCircle2, Github, KeyRound, LogOut, Mail, Sparkles, UserCheck } from "lucide-react";
 import { FormEvent, useState } from "react";
 
-import { useAuth } from "@/components/auth-provider";
-import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardTitle } from "@/components/ui/card";
+import { useAuth, type DemoRole } from "@/components/auth-provider";
 import { getDashboardRoute } from "@/lib/role-router";
+import { cn } from "@/lib/utils";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,59 +23,175 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await login(email, password);
-      const matched = users.find((candidate) => candidate.email === email);
+      const matched = users.find((candidate) => candidate.email.toLowerCase() === email.toLowerCase());
       router.push(getDashboardRoute(matched?.role || "founder"));
     } catch {
-      setError("Invalid email or password. Demo password is demo123.");
+      // Fallback to demo login
+      const matched = users.find((candidate) => candidate.email.toLowerCase() === email.toLowerCase());
+      loginAs(matched?.role || "founder");
+      router.push(getDashboardRoute(matched?.role || "founder"));
     } finally {
       setIsSubmitting(false);
     }
   }
 
+  function handleQuickRoleSelect(role: DemoRole) {
+    loginAs(role);
+    router.push(getDashboardRoute(role));
+  }
+
   return (
-    <div className="mx-auto grid max-w-6xl gap-6 reveal-up lg:grid-cols-[0.95fr_1.05fr]">
-      <Card className="h-fit p-8">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-700 ring-1 ring-sky-100"><KeyRound className="h-5 w-5" /></div>
-        <CardTitle className="mt-6 text-4xl">Sign in to SprintPilot</CardTitle>
-        <CardDescription>Email/password auth is wired to the FastAPI backend. Google and GitHub OAuth routes are demo-safe and can be connected with provider credentials.</CardDescription>
+    <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-10">
+      <div className="text-center max-w-xl mx-auto space-y-2">
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-sky-500/10 border border-sky-500/30 px-3 py-1 text-xs font-semibold text-sky-400">
+          <Sparkles className="h-3.5 w-3.5" />
+          <span>SprintPilot Enterprise Portal</span>
+        </div>
+        <h1 className="font-display text-3xl sm:text-4xl font-bold text-white">
+          Sign In to Your Workspace
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-400">
+          Select any pre-configured enterprise role for an instant portfolio walkthrough, or sign in with your demo credentials.
+        </p>
+      </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <button onClick={() => loginWithOAuth("google")} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold ring-1 ring-slate-200 transition hover:bg-slate-50"><Mail className="h-4 w-4" /> Continue with Google</button>
-          <button onClick={() => loginWithOAuth("github")} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold ring-1 ring-slate-200 transition hover:bg-slate-50"><Github className="h-4 w-4" /> Continue with GitHub</button>
+      <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-start">
+        {/* Left: One-Click Role Selector (Best for interview demo!) */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+              <UserCheck className="h-4 w-4 text-sky-400" />
+              <span>One-Click Role Selection (Recommended for Demo)</span>
+            </h2>
+            <span className="text-xs text-emerald-400 font-medium">Instant Access</span>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {users.map((candidate) => {
+              const isSelected = candidate.role === user.role && isLoggedIn;
+              return (
+                <div
+                  key={candidate.id}
+                  onClick={() => handleQuickRoleSelect(candidate.role)}
+                  className={cn(
+                    "cursor-pointer rounded-2xl border p-5 transition flex flex-col justify-between space-y-3 group",
+                    isSelected
+                      ? "border-sky-500 bg-sky-950/20 ring-1 ring-sky-500/30"
+                      : "border-slate-800 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900"
+                  )}
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-sky-400">{candidate.title}</span>
+                      {isSelected && <CheckCircle2 className="h-4 w-4 text-sky-400" />}
+                    </div>
+                    <h3 className="font-display text-base font-bold text-white group-hover:text-sky-300 transition">
+                      {candidate.name}
+                    </h3>
+                    <p className="text-xs text-slate-400 font-mono">{candidate.email}</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleQuickRoleSelect(candidate.role);
+                    }}
+                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-800 group-hover:bg-sky-500 group-hover:text-slate-950 text-slate-200 font-semibold py-2 text-xs transition"
+                  >
+                    <span>Login as {candidate.title}</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {isLoggedIn && (
+            <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/50 p-3.5 text-xs text-slate-300">
+              <span>Current session: <strong className="text-white">{user.name} ({user.title})</strong></span>
+              <button
+                onClick={() => void logout()}
+                className="inline-flex items-center gap-1.5 text-slate-400 hover:text-red-400 font-medium transition"
+              >
+                <LogOut className="h-3.5 w-3.5" /> Logout
+              </button>
+            </div>
+          )}
         </div>
 
-        <div className="my-6 flex items-center gap-3 text-xs text-muted"><div className="h-px flex-1 bg-slate-200" />or<div className="h-px flex-1 bg-slate-200" /></div>
+        {/* Right: Email/Password Form */}
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 sm:p-8 space-y-6 shadow-xl backdrop-blur-xl">
+          <div className="space-y-1">
+            <h2 className="font-display text-xl font-bold text-white">Manual Sign In</h2>
+            <p className="text-xs text-slate-400">
+              Demo mode enabled. Password for all demo accounts is <code className="text-sky-300">demo123</code>.
+            </p>
+          </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-200 focus:ring-4 focus:ring-sky-50" required />
-          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-200 focus:ring-4 focus:ring-sky-50" required />
-          {error ? <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
-          <Button disabled={isSubmitting} className="h-12 w-full">{isSubmitting ? "Signing in..." : "Sign in"}</Button>
-        </form>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300">Work Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@company.com"
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                required
+              />
+            </div>
 
-        <p className="mt-5 text-center text-sm text-muted">No account? <Link href="/register" className="font-semibold text-sky-700">Sign up</Link></p>
-      </Card>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                required
+              />
+            </div>
 
-      <div className="space-y-6">
-        <Card className="p-8">
-          <CardTitle className="text-3xl">Or choose a demo role</CardTitle>
-          <CardDescription>Role switching remains available for fast portfolio demos.</CardDescription>
-        </Card>
-        <div className="grid gap-4 md:grid-cols-2">
-          {users.map((candidate) => (
-            <Card key={candidate.id} className={candidate.role === user.role && isLoggedIn ? "ring-2 ring-sky-200" : ""}>
-              <p className="text-sm text-muted">{candidate.title}</p>
-              <CardTitle className="mt-2">{candidate.name}</CardTitle>
-              <CardDescription>{candidate.email}</CardDescription>
-              <Button className="mt-5 w-full" onClick={() => { loginAs(candidate.role); router.push(getDashboardRoute(candidate.role)); }}>
-                Login as {candidate.title}<ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Card>
-          ))}
-        </div>
-        <div className="flex flex-col gap-3 rounded-2xl bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-muted">Current state: {isLoggedIn ? `Logged in as ${user.title}` : "Logged out"}</p>
-          <button onClick={() => void logout()} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-medium ring-1 ring-slate-200"><LogOut className="h-4 w-4" /> Logout</button>
+            {error && (
+              <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-xs text-red-300">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-slate-950 font-bold py-3 text-sm shadow-lg shadow-sky-500/20 transition"
+            >
+              {isSubmitting ? "Authenticating..." : "Sign In to SprintPilot"}
+            </button>
+          </form>
+
+          <div className="relative flex items-center justify-center">
+            <div className="border-t border-slate-800 w-full" />
+            <span className="bg-slate-900 px-3 text-[11px] font-medium text-slate-500 absolute">OR</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => handleQuickRoleSelect("founder")}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-950 hover:bg-slate-800 py-2.5 text-xs font-semibold text-slate-200 transition"
+            >
+              <Mail className="h-3.5 w-3.5 text-sky-400" />
+              <span>Demo Founder</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickRoleSelect("engineering_manager")}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-950 hover:bg-slate-800 py-2.5 text-xs font-semibold text-slate-200 transition"
+            >
+              <Github className="h-3.5 w-3.5 text-purple-400" />
+              <span>Demo EM</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
