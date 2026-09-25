@@ -5,6 +5,8 @@ import {
   Activity,
   AlertTriangle,
   ArrowRight,
+  Binary,
+  BookOpen,
   Brain,
   CheckCircle2,
   ChevronRight,
@@ -33,7 +35,7 @@ interface XAIInspectorProps {
 }
 
 export function XAIInspector({ xai, isOpen, onClose, runId }: XAIInspectorProps) {
-  const [activeTab, setActiveTab] = useState<"attribution" | "counterfactual" | "lineage" | "governance">("attribution");
+  const [activeTab, setActiveTab] = useState<"attribution" | "counterfactual" | "lineage" | "governance" | "math">("attribution");
   const [simulatedActive, setSimulatedActive] = useState(false);
 
   if (!isOpen) return null;
@@ -76,12 +78,13 @@ export function XAIInspector({ xai, isOpen, onClose, runId }: XAIInspectorProps)
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-1 border-b border-slate-100 px-5 sm:px-6 bg-white pt-2">
+        <div className="flex items-center gap-1 border-b border-slate-100 px-5 sm:px-6 bg-white pt-2 overflow-x-auto">
           {[
             { id: "attribution", label: "Signal Attribution (Weights %)", icon: Scale },
             { id: "counterfactual", label: "Counterfactual 'What-If' Engine", icon: Lightbulb },
             { id: "lineage", label: "Claim-by-Claim Lineage Audit", icon: ShieldCheck },
             { id: "governance", label: "Model Governance & Standards", icon: Cpu },
+            { id: "math", label: "Mathematical Formulations & SCM", icon: Binary },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -420,6 +423,81 @@ export function XAIInspector({ xai, isOpen, onClose, runId }: XAIInspectorProps)
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Data Sovereignty & Egress</span>
                   <p className="font-semibold text-slate-900">{xai.modelGovernance.dataEgress}</p>
                   <p className="text-slate-500 text-[11px] pt-1">Zero data egress to public third parties; executes in private runtime.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: Mathematical Formulations & SCM Proofs */}
+          {activeTab === "math" && (
+            <div className="space-y-5">
+              <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 space-y-1">
+                <div className="flex items-center gap-2">
+                  <Binary className="h-4 w-4 text-blue-700" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                    Formal Mathematical Foundations & Literature Proofs
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-500">
+                  SprintPilot avoids heuristic approximations by adhering strictly to peer-reviewed XAI and causal inference frameworks.
+                </p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 text-xs">
+                {/* Math Card 1: Cross-Attention Decomposition */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-2.5 shadow-xs">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <span className="font-bold text-slate-900">1. Cross-Encoder Attention Softmax</span>
+                    <span className="text-[10px] font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Reimers & Gurevych</span>
+                  </div>
+                  <div className="rounded-lg bg-slate-900 text-slate-100 font-mono text-[11px] p-3 leading-relaxed overflow-x-auto">
+                    s(q, c_i) = Softmax( W_s · Attention( [q; c_i] ) )
+                  </div>
+                  <p className="text-slate-600 leading-relaxed text-[11px]">
+                    <strong>Why Bi-Encoders Fail:</strong> Standard vector search generates isolated sentence embeddings u and v with cosine metric cos(u, v), hiding all token interactions. SprintPilot passes concatenated query and candidate tokens [q; c_i] into the cross-encoder transformer, computing genuine all-to-all attention matrices across layers.
+                  </p>
+                </div>
+
+                {/* Math Card 2: Wachter Counterfactual Distance */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-2.5 shadow-xs">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <span className="font-bold text-slate-900">2. Minimal Actionable Perturbation</span>
+                    <span className="text-[10px] font-mono text-purple-600 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">Wachter et al. (Oxford 2017)</span>
+                  </div>
+                  <div className="rounded-lg bg-slate-900 text-slate-100 font-mono text-[11px] p-3 leading-relaxed overflow-x-auto">
+                    arg min_x'  [ ℓ( f(x'), y* ) + λ · Σ_k |x_k - x'_k| / MAD_k ]
+                  </div>
+                  <p className="text-slate-600 leading-relaxed text-[11px]">
+                    <strong>Actionability Guarantee:</strong> Counterfactual explanations solve for the minimum distance d(x, x') that flips the target classification from "High Risk" to "Low Risk". We enforce graph feasibility: only open code reviews or pending PRs can be perturbed, guaranteeing realistic operational recommendations.
+                  </p>
+                </div>
+
+                {/* Math Card 3: Judea Pearl Causal Hierarchy */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-2.5 shadow-xs">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <span className="font-bold text-slate-900">3. Pearl's Structural Causal DAG</span>
+                    <span className="text-[10px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Pearl (2009) Do-Calculus</span>
+                  </div>
+                  <div className="rounded-lg bg-slate-900 text-slate-100 font-mono text-[11px] p-3 leading-relaxed overflow-x-auto">
+                    P( Y | do(X = x) ) = Σ_z P( Y | X = x, Z = z ) · P( Z = z )
+                  </div>
+                  <p className="text-slate-600 leading-relaxed text-[11px]">
+                    <strong>Observational vs Interventional:</strong> Traditional LLMs compute passive correlation P(Risk | Jira Ticket). SprintPilot uses do-calculus on an engineering dependency DAG to isolate true confounders (e.g., distinguishing between a developer having high task load vs. an unreviewed PR stalling the entire launch path).
+                  </p>
+                </div>
+
+                {/* Math Card 4: Shapley Axiom of Efficiency */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-2.5 shadow-xs">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <span className="font-bold text-slate-900">4. Attribution Completeness</span>
+                    <span className="text-[10px] font-mono text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Shapley (1953) / Sundararajan</span>
+                  </div>
+                  <div className="rounded-lg bg-slate-900 text-slate-100 font-mono text-[11px] p-3 leading-relaxed overflow-x-auto">
+                    Σ_(i ∈ Silos) φ_i(v) = v(N) - v(∅)  ≡  100% Attributed
+                  </div>
+                  <p className="text-slate-600 leading-relaxed text-[11px]">
+                    <strong>Efficiency Axiom:</strong> The total attribution across engineering silos (Slack + GitHub + Jira + Docs) sums strictly to the total decision confidence delta. No phantom signal is created, and no critical blocker is lost in residual unallocated variance.
+                  </p>
                 </div>
               </div>
             </div>
