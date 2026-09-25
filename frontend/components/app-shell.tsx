@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   ArrowRight,
   BarChart2,
+  Brain,
   CheckSquare,
   Database,
   FileText,
@@ -36,6 +37,7 @@ const icons = {
   "alert-circle": AlertCircle,
   "alert-triangle": AlertTriangle,
   "bar-chart-2": BarChart2,
+  brain: Brain,
   "check-square": CheckSquare,
   "file-text": FileText,
   "git-branch": GitBranch,
@@ -225,6 +227,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <SidebarLink
               item={{ label: "Knowledge Base", icon: "layers", href: "/knowledge-base" }}
               active={isActive(pathname, "/knowledge-base")}
+            />
+            <SidebarLink
+              item={{ label: "XAI & Evaluations", icon: "brain", href: "/evaluations" }}
+              active={isActive(pathname, "/evaluations")}
             />
             <SidebarLink
               item={{ label: "Connectors", icon: "plug", href: "/connectors" }}

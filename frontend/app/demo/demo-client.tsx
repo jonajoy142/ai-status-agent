@@ -6,6 +6,7 @@ import {
   Activity,
   AlertTriangle,
   ArrowRight,
+  Brain,
   CheckCircle2,
   Clock,
   Cpu,
@@ -16,8 +17,10 @@ import {
   GitBranch,
   GitPullRequest,
   Layers,
+  Lightbulb,
   Lock,
   MessagesSquare,
+  Scale,
   Search,
   Send,
   ShieldCheck,
@@ -32,6 +35,7 @@ import {
 import { synthesizeOperatingBrief, type RAGQueryResult, type RetrievedChunk } from "@/lib/rag-engine";
 import { getDashboardRoute } from "@/lib/role-router";
 import { useAuth, type DemoRole } from "@/components/auth-provider";
+import { XAIInspector } from "@/components/xai-inspector";
 import { cn } from "@/lib/utils";
 
 const SAMPLE_QUERIES = [
@@ -66,12 +70,14 @@ export function DemoClient() {
   const { loginAs } = useAuth();
   const [selectedRole, setSelectedRole] = useState<string>("founder");
   const [query, setQuery] = useState(SAMPLE_QUERIES[0].query);
-  const [activeTab, setActiveTab] = useState<"brief" | "sources" | "pipeline" | "eval">("brief");
+  const [activeTab, setActiveTab] = useState<"brief" | "xai" | "sources" | "pipeline" | "eval">("brief");
   const [ragResult, setRagResult] = useState<RAGQueryResult>(() =>
     synthesizeOperatingBrief(SAMPLE_QUERIES[0].query, "founder")
   );
   const [selectedChunk, setSelectedChunk] = useState<RetrievedChunk | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isXAIModalOpen, setIsXAIModalOpen] = useState(false);
+  const [simulatedActive, setSimulatedActive] = useState(false);
 
   function handleExecute(newQuery: string, newRole?: string) {
     setIsProcessing(true);
@@ -282,6 +288,7 @@ export function DemoClient() {
               <div className="flex items-center gap-1.5">
                 {[
                   { id: "brief", label: "Operating Brief", icon: FileText },
+                  { id: "xai", label: "Explainability & XAI", icon: Brain },
                   { id: "sources", label: `Retrieved Chunks (${ragResult.sources.length})`, icon: Database },
                   { id: "pipeline", label: "Pipeline Trace", icon: Activity },
                   { id: "eval", label: "Quality Scorecard", icon: ShieldCheck },
@@ -367,6 +374,43 @@ export function DemoClient() {
                   )}
                 </div>
 
+                {/* Explainable AI (XAI) Attribution Bar */}
+                <div className="rounded-xl border border-blue-200/80 bg-blue-50/50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs shrink-0">
+                      <Brain className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-900">Explainable AI (XAI) Attribution</span>
+                        <span className="rounded bg-blue-100 text-blue-700 font-mono text-[10px] font-bold px-1.5 py-0.2 border border-blue-200">
+                          BGE Cross-Encoder
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 mt-0.5">
+                        Attribution weights: Slack <strong>{ragResult.xai.siloDistribution.slack}%</strong> · GitHub <strong>{ragResult.xai.siloDistribution.github}%</strong> · Jira <strong>{ragResult.xai.siloDistribution.jira}%</strong> · Docs <strong>{ragResult.xai.siloDistribution.docs}%</strong>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => setActiveTab("xai")}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 font-semibold px-3 py-1.5 text-xs shadow-xs transition"
+                    >
+                      <span>Inspect Attribution</span>
+                      <ArrowRight className="h-3 w-3 text-slate-500" />
+                    </button>
+                    <button
+                      onClick={() => setIsXAIModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold px-3 py-1.5 text-xs shadow-xs transition"
+                    >
+                      <Sparkles className="h-3 w-3 text-blue-300" />
+                      <span>Launch XAI Studio</span>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Grounded Citation Chips */}
                 <div>
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -389,6 +433,183 @@ export function DemoClient() {
                           {(s.score * 100).toFixed(0)}%
                         </span>
                       </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB XAI: Explainable AI & Attribution */}
+            {activeTab === "xai" && (
+              <div className="space-y-6">
+                {/* Header & Launch Studio Action */}
+                <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-display text-sm font-bold text-slate-900">
+                        Signal Attribution & Causal Reasoning Architecture
+                      </h3>
+                      <span className="rounded bg-blue-50 text-blue-700 font-mono text-[10px] font-bold px-2 py-0.5 border border-blue-200">
+                        BGE Cross-Encoder
+                      </span>
+                      <span className="rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 border border-emerald-200">
+                        EU AI Act Tier-1 Compliant
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Mathematical cross-attention decomposition and contrastive counterfactual simulation.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => setIsXAIModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold px-3.5 py-1.5 text-xs shadow-xs transition shrink-0"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 text-blue-300" />
+                    <span>Open Full XAI Inspector Modal</span>
+                  </button>
+                </div>
+
+                {/* Cross-Attention Silo Attribution Bar */}
+                <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                      Cross-Silo Signal Attribution Weight
+                    </span>
+                    <span className="text-xs font-mono text-slate-400">Sum = 100%</span>
+                  </div>
+
+                  <div className="flex h-3 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      style={{ width: `${ragResult.xai.siloDistribution.slack}%` }}
+                      className="bg-amber-500 transition-all duration-500"
+                    />
+                    <div
+                      style={{ width: `${ragResult.xai.siloDistribution.github}%` }}
+                      className="bg-purple-600 transition-all duration-500"
+                    />
+                    <div
+                      style={{ width: `${ragResult.xai.siloDistribution.jira}%` }}
+                      className="bg-blue-600 transition-all duration-500"
+                    />
+                    <div
+                      style={{ width: `${ragResult.xai.siloDistribution.docs}%` }}
+                      className="bg-emerald-600 transition-all duration-500"
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-slate-600 pt-1">
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-amber-500" />
+                      <span>Slack: <strong className="text-slate-900">{ragResult.xai.siloDistribution.slack}%</strong></span>
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-purple-600" />
+                      <span>GitHub: <strong className="text-slate-900">{ragResult.xai.siloDistribution.github}%</strong></span>
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-blue-600" />
+                      <span>Jira: <strong className="text-slate-900">{ragResult.xai.siloDistribution.jira}%</strong></span>
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-emerald-600" />
+                      <span>Docs: <strong className="text-slate-900">{ragResult.xai.siloDistribution.docs}%</strong></span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Counterfactual "What-If" Simulator */}
+                <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 shadow-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
+                    <div>
+                      <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">
+                        Contrastive Causal Reasoning
+                      </span>
+                      <h4 className="font-display text-base font-bold text-slate-900">
+                        Counterfactual "What-If" Simulator
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Simulate what happens when an engineering blocker is resolved before actual merge.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => setSimulatedActive(!simulatedActive)}
+                      className={cn(
+                        "inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition shadow-xs",
+                        simulatedActive
+                          ? "bg-emerald-600 text-white hover:bg-emerald-500"
+                          : "bg-slate-900 text-white hover:bg-slate-800"
+                      )}
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                      <span>{simulatedActive ? "Reset to Active Reality" : "Simulate: PR #412 Merged"}</span>
+                    </button>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Active State</span>
+                        <span className="rounded bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 text-xs font-bold uppercase">
+                          {ragResult.xai.counterfactual.currentRisk} Risk
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        Checkout launch held in staging due to timeout latency edge cases (&gt;1500ms) on PAY-231 and PR #412.
+                      </p>
+                      <p className="text-xs text-slate-400 font-mono pt-1">Status: Gated on Staging</p>
+                    </div>
+
+                    <div className={cn(
+                      "rounded-xl border p-4 space-y-2 transition duration-300",
+                      simulatedActive
+                        ? "border-emerald-300 bg-emerald-50/60 shadow-md ring-2 ring-emerald-500/20"
+                        : "border-slate-200 bg-slate-50/30 opacity-70"
+                    )}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1">
+                          <Zap className="h-3 w-3 text-emerald-600" />
+                          <span>Simulated Post-Intervention</span>
+                        </span>
+                        <span className="rounded bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-xs font-bold uppercase">
+                          {ragResult.xai.counterfactual.simulatedRisk} Risk (+{ragResult.xai.counterfactual.confidenceGain}%)
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        {ragResult.xai.counterfactual.technicalResolution}
+                      </p>
+                      <p className="text-xs text-emerald-700 font-bold pt-1">
+                        Impact: {ragResult.xai.counterfactual.businessImpact}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sentence-Level Lineage Audit Table */}
+                <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                      <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                      <span>Sentence-Level Lineage & Faithfulness Audit</span>
+                    </span>
+                    <span className="text-xs font-semibold text-emerald-700">100% Grounded</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {ragResult.xai.claimLineage.slice(0, 3).map((lineage, idx) => (
+                      <div key={idx} className="rounded-lg border border-slate-100 bg-slate-50/70 p-3 space-y-1 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-slate-900">Claim #{idx + 1}</span>
+                          <span className="font-mono text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                            [{lineage.groundedInId}] {(lineage.faithfulnessScore * 100).toFixed(0)}% Match
+                          </span>
+                        </div>
+                        <p className="text-slate-700 italic">&ldquo;{lineage.claim}&rdquo;</p>
+                        <p className="text-slate-500 font-mono text-[11px] pt-1">
+                          Source ({lineage.groundedInSource.toUpperCase()}): {lineage.exactSourceExcerpt}
+                        </p>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -704,6 +925,15 @@ export function DemoClient() {
           </Link>
         </div>
       </section>
+
+      {ragResult?.xai && (
+        <XAIInspector
+          xai={ragResult.xai}
+          isOpen={isXAIModalOpen}
+          onClose={() => setIsXAIModalOpen(false)}
+          runId="demo-session-phoenix"
+        />
+      )}
     </div>
   );
 }

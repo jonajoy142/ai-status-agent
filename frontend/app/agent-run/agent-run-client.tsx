@@ -5,6 +5,7 @@ import {
   Activity,
   AlertTriangle,
   ArrowRight,
+  Brain,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
@@ -20,6 +21,7 @@ import {
 
 import { runAgent, type AgentRunResponse } from "@/lib/api";
 import { useAuth } from "@/components/auth-provider";
+import { XAIInspector } from "@/components/xai-inspector";
 import { cn } from "@/lib/utils";
 
 const DEMO_PRESETS = [
@@ -53,6 +55,7 @@ export function AgentRunClient() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCitation, setSelectedCitation] = useState<AgentRunResponse["sources"][0] | null>(null);
   const [showTechnicalTrace, setShowTechnicalTrace] = useState(false);
+  const [isXAIModalOpen, setIsXAIModalOpen] = useState(false);
 
   async function onRun(customQ?: string) {
     const q = customQ || question;
@@ -178,13 +181,24 @@ export function AgentRunClient() {
                 </span>
               </div>
 
-              <button
-                onClick={copyReport}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 shadow-xs transition"
-              >
-                <Clipboard className="h-3.5 w-3.5 text-slate-500" />
-                <span>Copy Brief</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {result.xai && (
+                  <button
+                    onClick={() => setIsXAIModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 text-xs font-semibold shadow-xs transition"
+                  >
+                    <Brain className="h-3.5 w-3.5 text-blue-300" />
+                    <span>Explain Decision (XAI)</span>
+                  </button>
+                )}
+                <button
+                  onClick={copyReport}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 shadow-xs transition"
+                >
+                  <Clipboard className="h-3.5 w-3.5 text-slate-500" />
+                  <span>Copy Brief</span>
+                </button>
+              </div>
             </div>
 
             {/* Operating Brief Copy */}
@@ -194,6 +208,33 @@ export function AgentRunClient() {
                 {result.report.executive_summary}
               </p>
             </div>
+
+            {/* XAI Attribution Quick Banner */}
+            {result.xai && (
+              <div className="rounded-xl border border-blue-200/70 bg-blue-50/40 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs shrink-0">
+                    <Brain className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-900">Explainable AI (XAI) Attribution & Counterfactuals</span>
+                      <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-100/70 border border-blue-200 px-1.5 py-0.2 rounded">BGE Cross-Encoder</span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 mt-0.5">
+                      Signal weights: Slack <strong>{result.xai.siloDistribution.slack}%</strong> · GitHub <strong>{result.xai.siloDistribution.github}%</strong> · Jira <strong>{result.xai.siloDistribution.jira}%</strong> · Docs <strong>{result.xai.siloDistribution.docs}%</strong>
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsXAIModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-800 hover:underline shrink-0"
+                >
+                  <span>Inspect Counterfactual & Lineage</span>
+                  <ArrowRight className="h-3 w-3" />
+                </button>
+              </div>
+            )}
 
             {/* Risks & Recommendations Grid */}
             <div className="grid sm:grid-cols-2 gap-4 pt-1">
@@ -360,6 +401,15 @@ export function AgentRunClient() {
             )}
           </div>
         </div>
+      )}
+
+      {result?.xai && (
+        <XAIInspector
+          xai={result.xai}
+          isOpen={isXAIModalOpen}
+          onClose={() => setIsXAIModalOpen(false)}
+          runId={result.run_id}
+        />
       )}
     </div>
   );

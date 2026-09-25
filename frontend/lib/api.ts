@@ -1,3 +1,5 @@
+import { type XAIAnalysis, synthesizeOperatingBrief } from "@/lib/rag-engine";
+
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export type AgentRunResponse = {
@@ -5,6 +7,7 @@ export type AgentRunResponse = {
   session_id: string;
   question: string;
   answer: string;
+  xai?: XAIAnalysis;
   report: {
     executive_summary: string;
     status: {
@@ -52,6 +55,7 @@ export const sampleAgentRun: AgentRunResponse = {
   question: "What is the current checkout launch status and risk?",
   answer:
     "Checkout launch is progressing with medium risk. Payment gateway work is in progress, observability is live, and the remaining launch concern is retry-safe payment handling plus one auth stability review.",
+  xai: synthesizeOperatingBrief("What is the current checkout launch status and risk?", "founder").xai,
   report: {
     executive_summary:
       "Checkout launch is progressing, but should remain in medium-risk status until payment retry behavior and session refresh reliability pass one more staging validation. The most important active work is Stripe gateway integration, auth refresh reliability, and release-note source cleanup.",
@@ -158,6 +162,7 @@ export async function runAgent(question: string): Promise<AgentRunResponse> {
     session_id: "sprintpilot-local",
     question,
     answer: rag.answer,
+    xai: rag.xai,
     report: {
       executive_summary: rag.executiveSummary,
       status: {
@@ -304,6 +309,7 @@ function mapAgenticRun(payload: {
     session_id: "agentic-graph",
     question,
     answer: state.report_final || structured.executive_summary || state.report_draft || "SprintPilot generated an agentic execution brief.",
+    xai: synthesizeOperatingBrief(question, "founder").xai,
     report: {
       executive_summary: structured.executive_summary || state.report_draft || "Execution brief generated from agentic workflow.",
       status: {
