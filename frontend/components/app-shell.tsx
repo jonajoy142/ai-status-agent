@@ -82,10 +82,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
 
             <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-600">
+              <Link href="/demo#xai-architecture" className="hover:text-blue-700 transition flex items-center gap-1.5 text-blue-700 font-bold">
+                <Brain className="h-3.5 w-3.5 text-blue-600" />
+                <span>Explainable AI (XAI)</span>
+              </Link>
               <Link href="/demo#problem" className="hover:text-slate-900 transition">The Problem</Link>
-              <Link href="/demo#rag-architecture" className="hover:text-slate-900 transition">RAG Architecture</Link>
               <Link href="/demo#role-matrix" className="hover:text-slate-900 transition">Role Lens</Link>
               <Link href="/demo#sandbox" className="hover:text-slate-900 transition">Live Demo</Link>
+              <Link href="/evaluations" className="hover:text-slate-900 transition">Evaluations</Link>
               <Link href="/pricing" className="hover:text-slate-900 transition">Pricing</Link>
             </nav>
 
