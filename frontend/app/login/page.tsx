@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { users, user, loginAs, login, loginWithOAuth, logout, isLoggedIn } = useAuth();
+  const { users, user, loginAs, login, logout, isLoggedIn } = useAuth();
   const [email, setEmail] = useState("founder@demo.sprintpilot.ai");
   const [password, setPassword] = useState("demo123");
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +26,6 @@ export default function LoginPage() {
       const matched = users.find((candidate) => candidate.email.toLowerCase() === email.toLowerCase());
       router.push(getDashboardRoute(matched?.role || "founder"));
     } catch {
-      // Fallback to demo login
       const matched = users.find((candidate) => candidate.email.toLowerCase() === email.toLowerCase());
       loginAs(matched?.role || "founder");
       router.push(getDashboardRoute(matched?.role || "founder"));
@@ -41,32 +40,28 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-10">
-      <div className="text-center max-w-xl mx-auto space-y-2">
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-sky-500/10 border border-sky-500/30 px-3 py-1 text-xs font-semibold text-sky-400">
-          <Sparkles className="h-3.5 w-3.5" />
-          <span>SprintPilot Enterprise Portal</span>
-        </div>
-        <h1 className="font-display text-3xl sm:text-4xl font-bold text-white">
-          Sign In to Your Workspace
+    <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-8">
+      <div className="text-center max-w-lg mx-auto space-y-2">
+        <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">
+          Sign In to SprintPilot
         </h1>
-        <p className="text-xs sm:text-sm text-slate-400">
-          Select any pre-configured enterprise role for an instant portfolio walkthrough, or sign in with your demo credentials.
+        <p className="text-xs sm:text-sm text-slate-500">
+          Select any pre-configured enterprise role for an instant portfolio walkthrough.
         </p>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-start">
-        {/* Left: One-Click Role Selector (Best for interview demo!) */}
-        <div className="space-y-4">
+      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] items-start">
+        {/* Left: One-Click Role Selector */}
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-              <UserCheck className="h-4 w-4 text-sky-400" />
-              <span>One-Click Role Selection (Recommended for Demo)</span>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+              <UserCheck className="h-4 w-4 text-slate-600" />
+              <span>One-Click Role Selection (Demo)</span>
             </h2>
-            <span className="text-xs text-emerald-400 font-medium">Instant Access</span>
+            <span className="text-xs text-emerald-700 font-medium">Instant Access</span>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-2.5 sm:grid-cols-2">
             {users.map((candidate) => {
               const isSelected = candidate.role === user.role && isLoggedIn;
               return (
@@ -74,18 +69,18 @@ export default function LoginPage() {
                   key={candidate.id}
                   onClick={() => handleQuickRoleSelect(candidate.role)}
                   className={cn(
-                    "cursor-pointer rounded-2xl border p-5 transition flex flex-col justify-between space-y-3 group",
+                    "cursor-pointer rounded-xl border p-4 transition flex flex-col justify-between space-y-3 bg-white shadow-xs group",
                     isSelected
-                      ? "border-sky-500 bg-sky-950/20 ring-1 ring-sky-500/30"
-                      : "border-slate-800 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900"
+                      ? "border-blue-600 ring-1 ring-blue-600/20"
+                      : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"
                   )}
                 >
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-sky-400">{candidate.title}</span>
-                      {isSelected && <CheckCircle2 className="h-4 w-4 text-sky-400" />}
+                      <span className="text-[11px] font-semibold text-blue-600">{candidate.title}</span>
+                      {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />}
                     </div>
-                    <h3 className="font-display text-base font-bold text-white group-hover:text-sky-300 transition">
+                    <h3 className="font-display text-sm font-bold text-slate-900 group-hover:text-blue-600 transition">
                       {candidate.name}
                     </h3>
                     <p className="text-xs text-slate-400 font-mono">{candidate.email}</p>
@@ -97,10 +92,10 @@ export default function LoginPage() {
                       e.stopPropagation();
                       handleQuickRoleSelect(candidate.role);
                     }}
-                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-800 group-hover:bg-sky-500 group-hover:text-slate-950 text-slate-200 font-semibold py-2 text-xs transition"
+                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-slate-100 group-hover:bg-slate-900 group-hover:text-white text-slate-700 font-medium py-1.5 text-xs transition"
                   >
-                    <span>Login as {candidate.title}</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
+                    <span>View as {candidate.title}</span>
+                    <ArrowRight className="h-3 w-3" />
                   </button>
                 </div>
               );
@@ -108,11 +103,11 @@ export default function LoginPage() {
           </div>
 
           {isLoggedIn && (
-            <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/50 p-3.5 text-xs text-slate-300">
-              <span>Current session: <strong className="text-white">{user.name} ({user.title})</strong></span>
+            <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-600 shadow-xs">
+              <span>Current session: <strong className="text-slate-900">{user.name} ({user.title})</strong></span>
               <button
                 onClick={() => void logout()}
-                className="inline-flex items-center gap-1.5 text-slate-400 hover:text-red-400 font-medium transition"
+                className="inline-flex items-center gap-1.5 text-slate-500 hover:text-rose-600 font-medium transition"
               >
                 <LogOut className="h-3.5 w-3.5" /> Logout
               </button>
@@ -121,41 +116,41 @@ export default function LoginPage() {
         </div>
 
         {/* Right: Email/Password Form */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 sm:p-8 space-y-6 shadow-xl backdrop-blur-xl">
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 space-y-5 shadow-sm">
           <div className="space-y-1">
-            <h2 className="font-display text-xl font-bold text-white">Manual Sign In</h2>
-            <p className="text-xs text-slate-400">
-              Demo mode enabled. Password for all demo accounts is <code className="text-sky-300">demo123</code>.
+            <h2 className="font-display text-lg font-bold text-slate-900">Sign In with Credentials</h2>
+            <p className="text-xs text-slate-500">
+              Password for all demo accounts is <code className="font-mono text-slate-700 bg-slate-100 px-1 py-0.5 rounded">demo123</code>.
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Work Email</label>
+          <form onSubmit={handleLogin} className="space-y-3.5">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-700">Work Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@company.com"
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition"
                 required
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Password</label>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-700">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition"
                 required
               />
             </div>
 
             {error && (
-              <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-xs text-red-300">
+              <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
                 {error}
               </p>
             )}
@@ -163,33 +158,33 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-slate-950 font-bold py-3 text-sm shadow-lg shadow-sky-500/20 transition"
+              className="w-full rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-medium py-2.5 text-xs shadow-sm transition disabled:opacity-50"
             >
-              {isSubmitting ? "Authenticating..." : "Sign In to SprintPilot"}
+              {isSubmitting ? "Authenticating..." : "Sign In"}
             </button>
           </form>
 
           <div className="relative flex items-center justify-center">
-            <div className="border-t border-slate-800 w-full" />
-            <span className="bg-slate-900 px-3 text-[11px] font-medium text-slate-500 absolute">OR</span>
+            <div className="border-t border-slate-100 w-full" />
+            <span className="bg-white px-3 text-[11px] font-medium text-slate-400 absolute">OR QUICK LOGIN</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             <button
               type="button"
               onClick={() => handleQuickRoleSelect("founder")}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-950 hover:bg-slate-800 py-2.5 text-xs font-semibold text-slate-200 transition"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 py-2 text-xs font-medium text-slate-700 shadow-xs transition"
             >
-              <Mail className="h-3.5 w-3.5 text-sky-400" />
-              <span>Demo Founder</span>
+              <Mail className="h-3 w-3 text-slate-500" />
+              <span>Founder Demo</span>
             </button>
             <button
               type="button"
               onClick={() => handleQuickRoleSelect("engineering_manager")}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-950 hover:bg-slate-800 py-2.5 text-xs font-semibold text-slate-200 transition"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 py-2 text-xs font-medium text-slate-700 shadow-xs transition"
             >
-              <Github className="h-3.5 w-3.5 text-purple-400" />
-              <span>Demo EM</span>
+              <Github className="h-3 w-3 text-slate-500" />
+              <span>EM Demo</span>
             </button>
           </div>
         </div>

@@ -49,7 +49,7 @@ export default function EvaluationsPage() {
             ].map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.label} className="grid grid-cols-[2rem_1fr_auto] items-center gap-3 rounded-xl border border-border bg-slate-50/70 p-3 dark:bg-slate-950/40">
+                <div key={item.label} className="grid grid-cols-[2rem_1fr_auto] items-center gap-3 rounded-xl border border-border bg-slate-50/70 p-3">
                   <Icon className="h-4 w-4 text-muted" />
                   <p className="text-sm font-medium">{item.label}</p>
                   <StatusBadge label={`${item.score}%`} tone={item.tone as "good" | "warn"} />

@@ -13,74 +13,74 @@ const tasks = [
 
 export default function DeveloperDashboardPage() {
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-6xl mx-auto">
       {/* Header Card */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 backdrop-blur-xl">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-          <div className="space-y-3 max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-400">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>Developer Execution Brief</span>
+      <div className="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+              <span>Developer Lens</span>
             </div>
-            <h1 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
               Good morning, Alex.
             </h1>
-            <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-              Your focus today is staging validation for <strong className="text-white">PAY-231</strong>, reviewing Isha&apos;s Redis mutex patch (<strong className="text-sky-400">PR #398</strong>), and keeping your blockers unblocked.
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Your focus today is staging validation for <strong className="text-slate-900 font-semibold">PAY-231</strong>, reviewing Isha&apos;s Redis mutex patch (<strong className="text-blue-600 font-semibold">PR #398</strong>), and keeping your blockers resolved.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             <Link href="/agent-run">
-              <Button className="h-11 px-5">
-                <Sparkles className="mr-2 h-4 w-4" /> Ask RAG Agent
+              <Button className="h-9 px-4 text-xs">
+                <Sparkles className="mr-1.5 h-3.5 w-3.5" /> Ask RAG Agent
               </Button>
             </Link>
             <Link
               href="/my-blockers"
-              className="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-white font-semibold h-11 px-4 text-xs transition"
+              className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium h-9 px-3.5 text-xs shadow-xs transition"
             >
-              View My Blockers <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              My Blockers <ArrowRight className="ml-1 h-3 w-3 text-slate-400" />
             </Link>
           </div>
         </div>
       </div>
 
       {/* Focus Tasks */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 space-y-4 shadow-sm">
         <div>
-          <h2 className="font-display text-lg font-bold text-white">Your Focus Items Today</h2>
-          <p className="text-xs text-slate-400">Ranked by launch path criticality and dependency chain.</p>
+          <h2 className="font-display text-base font-bold text-slate-900">Your Focus Items Today</h2>
+          <p className="text-xs text-slate-500">Ranked by launch path criticality and dependency chain.</p>
         </div>
 
         <div className="space-y-3">
           {tasks.map((task) => (
-            <div key={task.id} className="rounded-xl border border-slate-800 bg-slate-950 p-5 space-y-3">
+            <div key={task.id} className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-2.5">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-2.5">
                   {task.blocker ? (
-                    <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+                    <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
                   ) : (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
                   )}
                   <div>
-                    <span className="font-mono text-xs font-bold text-sky-400">{task.id}</span>
-                    <h3 className="text-sm font-semibold text-white mt-0.5">{task.title}</h3>
-                    <p className="text-xs text-slate-400 mt-1">Status: {task.status} · Estimate: {task.estimate}</p>
+                    <span className="font-mono text-xs font-bold text-blue-600">{task.id}</span>
+                    <h3 className="text-sm font-semibold text-slate-900 mt-0.5">{task.title}</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Status: {task.status} · Estimate: {task.estimate}</p>
                   </div>
                 </div>
                 <StatusBadge label={task.blocker ? "Watch" : "Ready"} tone={task.blocker ? "warn" : "good"} />
               </div>
 
               {task.blocker && (
-                <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-800">
                   <strong>Dependency Watch:</strong> {task.blocker}
                 </div>
               )}
 
-              <div className="rounded-lg border border-slate-800 bg-slate-900/70 p-3 text-xs text-slate-300 flex items-start gap-2">
-                <Sparkles className="h-3.5 w-3.5 text-sky-400 shrink-0 mt-0.5" />
-                <span><strong>AI Execution Tip:</strong> {task.ai}</span>
+              <div className="rounded-lg border border-slate-200 bg-white p-2.5 text-xs text-slate-600 flex items-start gap-2">
+                <Sparkles className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
+                <span><strong>Execution Context:</strong> {task.ai}</span>
               </div>
             </div>
           ))}
@@ -88,26 +88,26 @@ export default function DeveloperDashboardPage() {
       </div>
 
       {/* PRs Section */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 space-y-3.5 shadow-sm">
         <div className="flex items-center gap-2">
-          <GitPullRequest className="h-5 w-5 text-purple-400" />
-          <h2 className="font-display text-lg font-bold text-white">Active Pull Requests</h2>
+          <GitPullRequest className="h-4 w-4 text-slate-700" />
+          <h2 className="font-display text-base font-bold text-slate-900">Active Pull Requests</h2>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-bold text-purple-400">PR #412</span>
-              <span className="text-xs font-semibold text-white">feat(payments): Stripe webhook idempotent handler & exponential backoff</span>
+              <span className="font-mono text-xs font-bold text-blue-600">PR #412</span>
+              <span className="text-xs font-semibold text-slate-900">feat(payments): Stripe webhook idempotent handler & exponential backoff</span>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
-              Author: Rahul Verma · Waiting on review from Dev Shah · Closes PAY-231
+            <p className="text-xs text-slate-500 mt-1">
+              Author: Rahul Verma · Reviewer: Dev Shah · Closes PAY-231
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Link
               href="/my-prs"
-              className="rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold px-3 py-1.5 text-xs transition"
+              className="rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-medium px-3 py-1.5 text-xs transition shadow-xs"
             >
               Inspect PR
             </Link>
