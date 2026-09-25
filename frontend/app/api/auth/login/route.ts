@@ -1,12 +1,22 @@
 import { NextResponse } from "next/server";
-import { demoUsers, type DemoRole } from "@/components/auth-provider";
+import { getUserByEmail, type DemoRole } from "@/lib/demo-users";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json().catch(() => ({}));
-    const { email, password } = body;
+    let email = "";
+    let password = "";
 
-    // Check if we should forward to external backend if configured and available
+    try {
+      const body = await request.json();
+      if (body && typeof body === "object") {
+        email = body.email || "";
+        password = body.password || "";
+      }
+    } catch {
+      // Body parsing fallback
+    }
+
+    // Forward to external backend if configured and available
     const externalApi = process.env.FASTAPI_BACKEND_URL;
     if (externalApi) {
       try {
@@ -26,14 +36,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // Match demo user or fallback to founder
-    const user = demoUsers.find((u) => u.email.toLowerCase() === (email || "").toLowerCase()) || {
-      id: "u-custom",
-      name: email ? email.split("@")[0] : "Demo Leader",
-      email: email || "founder@demo.sprintpilot.ai",
-      role: "founder" as DemoRole,
-      title: "Founder / CEO",
-    };
+    // Serverless demo auth matching
+    const user = getUserByEmail(email);
 
     const payload = {
       access_token: `demo-jwt-token-${Date.now()}-${user.id}`,
@@ -43,7 +47,7 @@ export async function POST(request: Request) {
       workspace_id: "ws-demo-checkout",
     };
 
-    const response = NextResponse.json(payload);
+    const response = NextResponse.json(payload, { status: 200 });
     response.cookies.set("sprintpilot_session", "1", {
       path: "/",
       maxAge: 2592000,
@@ -51,6 +55,17 @@ export async function POST(request: Request) {
     });
     return response;
   } catch (error) {
-    return NextResponse.json({ detail: "Authentication failed", error: String(error) }, { status: 400 });
+    // Fail-safe demo session so login never breaks in presentation
+    const fallbackUser = getUserByEmail("founder@demo.sprintpilot.ai");
+    const payload = {
+      access_token: `demo-jwt-token-${Date.now()}-fallback`,
+      token_type: "bearer",
+      user: fallbackUser,
+      role: fallbackUser.role,
+      workspace_id: "ws-demo-checkout",
+    };
+    const response = NextResponse.json(payload, { status: 200 });
+    response.cookies.set("sprintpilot_session", "1", { path: "/", maxAge: 2592000, sameSite: "lax" });
+    return response;
   }
 }

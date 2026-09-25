@@ -4,31 +4,18 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { API_BASE_URL } from "@/lib/api";
 
-export type DemoRole = "founder" | "product_manager" | "engineering_manager" | "engineer" | "viewer";
+import {
+  DEMO_USERS,
+  ROLE_LABELS,
+  type DemoRole,
+  type DemoUser,
+  getUserByEmail,
+  getUserByRole,
+} from "@/lib/demo-users";
 
-export type DemoUser = {
-  id: string;
-  name: string;
-  email: string;
-  role: DemoRole;
-  title: string;
-};
-
-export const demoUsers: DemoUser[] = [
-  { id: "u-founder", name: "Ananya Rao", email: "founder@demo.sprintpilot.ai", role: "founder", title: "Founder / CEO" },
-  { id: "u-pm", name: "Maya Menon", email: "pm@demo.sprintpilot.ai", role: "product_manager", title: "Product Manager" },
-  { id: "u-em", name: "Dev Shah", email: "em@demo.sprintpilot.ai", role: "engineering_manager", title: "Engineering Manager" },
-  { id: "u-eng", name: "Alex Torres", email: "dev@demo.sprintpilot.ai", role: "engineer", title: "Backend Engineer" },
-  { id: "u-viewer", name: "Nora Lee", email: "viewer@demo.sprintpilot.ai", role: "viewer", title: "Viewer" },
-];
-
-const labels: Record<DemoRole, string> = {
-  founder: "Founder",
-  product_manager: "Product Manager",
-  engineering_manager: "Engineering Manager",
-  engineer: "Engineer",
-  viewer: "Viewer",
-};
+export type { DemoRole, DemoUser };
+export const demoUsers = DEMO_USERS;
+const labels = ROLE_LABELS;
 
 type AuthPayload = {
   access_token: string;
